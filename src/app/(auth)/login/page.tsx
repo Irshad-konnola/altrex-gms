@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -27,7 +26,6 @@ const loginSchema = z.object({
 })
 
 export default function LoginPage() {
-  const router = useRouter()
   const supabase = createClient()
   const [isLoading, setIsLoading] = useState(false)
   const [role, setRole] = useState<"owner" | "front_desk">("owner")
@@ -57,11 +55,12 @@ export default function LoginPage() {
       toast.success("Login successful!")
     }
 
-    router.refresh()
+   // Use window.location to force a hard reload. 
+    // This absolutely guarantees cookies are synced with Server Components.
     if (userRole === "owner") {
-      router.push("/dashboard")
+      window.location.assign("/dashboard")
     } else {
-      router.push("/attendance")
+      window.location.assign("/attendance")
     }
   }
 
