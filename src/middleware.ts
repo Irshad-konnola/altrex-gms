@@ -11,6 +11,15 @@ const OWNER_ONLY_PATHS = [
 ]
 
 export async function middleware(request: NextRequest) {
+if (
+    request.nextUrl.pathname.startsWith('/api/cron') ||
+    request.nextUrl.pathname.startsWith('/api/payments/webhook') ||
+    request.nextUrl.pathname.startsWith('/api/whatsapp/webhook') ||
+    request.nextUrl.pathname.startsWith('/api/device/checkin')
+  ) {
+    return NextResponse.next()
+  }
+  
   let supabaseResponse = NextResponse.next({
     request,
   })
