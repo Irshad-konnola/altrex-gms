@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { User,ScanFace, CalendarDays, Phone, Mail, MapPin, Activity, CheckCircle2, History, CreditCard } from "lucide-react"
+import { User,ScanFace, CalendarDays, Phone, Mail, MapPin, Activity, CheckCircle2, History, CreditCard, Dumbbell } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { MemberBadge } from "./MemberBadge"
@@ -11,9 +11,12 @@ import { EditMemberModal } from "./EditMemberModal"
 import { useRouter } from "next/navigation"
 import { updateMemberAction, archiveMemberAction } from "@/app/(dashboard)/members/actions"
 import { toast } from "sonner"
+// Import the new PT Tab component
+import { PTTab } from "@/components/pt/PTTab"
 
+// Added "PT" to the tabs array
+const TABS = ["Overview", "Attendance", "Payments", "PT"]
 
-const TABS = ["Overview", "Attendance", "Payments"]
 export function MemberProfile({ initialData }: { initialData: any }) {
   const [isArchiving, setIsArchiving] = useState(false)
   const router = useRouter()
@@ -21,7 +24,6 @@ export function MemberProfile({ initialData }: { initialData: any }) {
   const member = initialData
 
   const handleArchive = async () => {
-    // Simple native confirmation dialog to prevent accidental clicks
     if (!window.confirm("Are you sure you want to archive this member? Their history will be saved, but they will be removed from the active list.")) {
       return
     }
@@ -31,7 +33,7 @@ export function MemberProfile({ initialData }: { initialData: any }) {
       const result = await archiveMemberAction(member.id)
       if (result.success) {
         toast.success("Member archived successfully.")
-        router.push("/members") // Kick the user back to the list
+        router.push("/members") 
       } else {
         toast.error(`Error: ${result.error}`)
       }
@@ -47,12 +49,10 @@ export function MemberProfile({ initialData }: { initialData: any }) {
       
       {/* Top Header Card */}
       <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row gap-6 sm:items-center justify-between relative overflow-hidden">
-        {/* Subtle gold glow background */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/5 blur-[80px] rounded-full pointer-events-none" />
         
         <div className="flex items-center gap-6 z-10">
           <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-dark-900 border-2 border-dark-700 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
-            {/* NEW: Use the real photo if it exists */}
             {member.photo_url ? (
               <img src={member.photo_url} alt={member.full_name} className="w-full h-full object-cover" />
             ) : (
@@ -71,35 +71,12 @@ export function MemberProfile({ initialData }: { initialData: any }) {
               {member.device_user_id && (
                 <span className="flex items-center gap-1.5 text-green-400"><ScanFace className="w-4 h-4" /> Face ID: {member.device_user_id}</span>
               )}
-              {/* NEW: Show BMI */}
               {member.bmi && (
                 <span className="flex items-center gap-1.5 text-gold-400"><Activity className="w-4 h-4" /> BMI: {member.bmi}</span>
               )}
             </div>
             </div>
           </div>
-
-        {/* <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left z-10">
-          <div className="w-24 h-24 rounded-full bg-dark-900 border-2 border-dark-700 flex items-center justify-center text-dark-400 shrink-0 shadow-xl">
-            <User className="w-10 h-10" />
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <h1 className="text-3xl font-bold text-white tracking-tight">{member.full_name}</h1>
-              <MemberBadge status={member.status} />
-              {member.is_pt_member && (
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium uppercase tracking-wider bg-gold-500/20 text-gold-400 border border-gold-500/30">
-                  PT Active
-                </span>
-              )}
-            </div>
-            <div className="flex items-center justify-center sm:justify-start gap-4 text-dark-300 text-sm font-medium">
-              <span className="flex items-center gap-1.5"><Phone className="w-4 h-4" /> {member.phone}</span>
-              <span className="flex items-center gap-1.5"><CalendarDays className="w-4 h-4" /> Joined Feb 2026</span>
-            </div>
-          </div> */}
-        {/* </div> */}
 
         <div className="flex flex-col gap-3 w-full sm:w-auto z-10">
           <Button className="bg-gold-500 hover:bg-gold-600 text-dark-950 font-bold w-full sm:w-40 rounded-xl shadow-[0_0_15px_rgba(234,179,8,0.2)]">
@@ -152,24 +129,24 @@ export function MemberProfile({ initialData }: { initialData: any }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
                   <div>
                     <p className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-1">Email</p>
-                    <p className="text-dark-50 flex items-center gap-2"><Mail className="w-4 h-4 text-dark-400" /> {member.email}</p>
+                    <p className="text-dark-50 flex items-center gap-2"><Mail className="w-4 h-4 text-dark-400" /> {member.email || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-1">Date of Birth</p>
-                    <p className="text-dark-50">{member.dob}</p>
+                    <p className="text-dark-50">{member.date_of_birth || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-1">Gender</p>
-                    <p className="text-dark-50">{member.gender}</p>
+                    <p className="text-dark-50 capitalize">{member.gender || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-1">Address</p>
-                    <p className="text-dark-50 flex items-start gap-2"><MapPin className="w-4 h-4 text-dark-400 shrink-0 mt-0.5" /> {member.address}</p>
+                    <p className="text-dark-50 flex items-start gap-2"><MapPin className="w-4 h-4 text-dark-400 shrink-0 mt-0.5" /> {member.address || "N/A"}</p>
                   </div>
                   <div className="sm:col-span-2 pt-4 border-t border-dark-800">
                     <p className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-2">Health Notes / Injuries</p>
                     <div className="bg-dark-900 border border-dark-800 p-4 rounded-xl text-dark-200 text-sm">
-                      {member.health_notes}
+                      {member.health_notes || "No health notes provided."}
                     </div>
                   </div>
                 </div>
@@ -177,7 +154,6 @@ export function MemberProfile({ initialData }: { initialData: any }) {
             </div>
           )}
 
-          {/* PLACEHOLDERS FOR OTHER TABS */}
           {activeTab === "Attendance" && (
             <div className="bg-dark-950 border border-dark-800 rounded-2xl p-12 text-center animate-in fade-in duration-300">
               <History className="w-12 h-12 text-dark-600 mx-auto mb-4" />
@@ -194,6 +170,13 @@ export function MemberProfile({ initialData }: { initialData: any }) {
             </div>
           )}
 
+          {/* NEW PT TAB */}
+          {activeTab === "PT" && (
+            <div className="animate-in fade-in duration-300">
+              <PTTab memberId={member.id} />
+            </div>
+          )}
+
         </div>
 
         {/* Right Column (Side Widgets) */}
@@ -207,7 +190,7 @@ export function MemberProfile({ initialData }: { initialData: any }) {
             
             <div className="bg-dark-900 border border-dark-700 rounded-xl p-5 mb-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-1 h-full bg-gold-500" />
-              <h4 className="font-bold text-white text-lg mb-1">{member.plan_name}</h4>
+              <h4 className="font-bold text-white text-lg mb-1">{member.plan_name || "General Access"}</h4>
               <p className="text-dark-300 text-sm flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-500" /> Active
               </p>
@@ -216,11 +199,11 @@ export function MemberProfile({ initialData }: { initialData: any }) {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-dark-400 text-sm font-medium">Valid Till</span>
-                <span className="text-white font-semibold">{member.end_date}</span>
+                <span className="text-white font-semibold">{member.end_date || "N/A"}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-dark-400 text-sm font-medium">Time Remaining</span>
-                <span className="text-gold-500 font-bold">{member.days_left} days</span>
+                <span className="text-gold-500 font-bold">{member.days_left || "0"} days</span>
               </div>
             </div>
           </div>
@@ -228,19 +211,18 @@ export function MemberProfile({ initialData }: { initialData: any }) {
           {/* PT Widget (Conditionally rendered) */}
           {member.is_pt_member && (
             <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Personal Training</h3>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                <Dumbbell className="w-4 h-4 text-gold-500" /> Personal Training
+              </h3>
               
               <div className="space-y-4">
                 <div className="flex justify-between items-center pb-3 border-b border-dark-800">
-                  <span className="text-dark-400 text-sm font-medium">Trainer</span>
-                  <span className="text-white font-semibold">{member.trainer_name}</span>
+                  <span className="text-dark-400 text-sm font-medium">Status</span>
+                  <span className="text-white font-semibold">Active</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-dark-400 text-sm font-medium">Sessions Left</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-black text-gold-500">{member.pt_sessions_left}</span>
-                    <span className="text-dark-400 text-xs mt-1">/ 20</span>
-                  </div>
+                  <span className="text-dark-400 text-sm font-medium">Check PT Tab</span>
+                  <Button variant="link" onClick={() => setActiveTab("PT")} className="text-gold-500 p-0 h-auto">View Details →</Button>
                 </div>
               </div>
             </div>
