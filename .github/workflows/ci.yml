@@ -19,6 +19,15 @@ jobs:
       - run: npm run lint
       - run: npm run build
         env:
-          # Dummy variables so Next.js can compile the Supabase client in CI
-          NEXT_PUBLIC_SUPABASE_URL: "https://placeholder.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "placeholder_key"
+          NEXT_PUBLIC_SUPABASE_URL: "https://dummy-project.supabase.co"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "dummy-anon-key"
+          SUPABASE_SERVICE_ROLE_KEY: "dummy-service-key"
+          CRON_SECRET: "dummy-cron-secret"
+          RAZORPAY_KEY_ID: "dummy-razorpay-id"
+          RAZORPAY_KEY_SECRET: "dummy-razorpay-secret"
+          RAZORPAY_WEBHOOK_SECRET: "dummy-razorpay-webhook"
+          OWNER_PHONE_NUMBER: "dummy-phone"
+          # Meta WhatsApp API Setup
+          WHATSAPP_ACCESS_TOKEN: "dummy-token"
+          WHATSAPP_PHONE_NUMBER_ID: "dummy-phone-id"
+          WHATSAPP_WEBHOOK_VERIFY_TOKEN: "dummy-verify-token"
