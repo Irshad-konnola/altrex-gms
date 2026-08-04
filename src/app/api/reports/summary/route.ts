@@ -1,6 +1,7 @@
 // src/app/api/reports/summary/route.ts
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { startOfMonth, subMonths, format } from 'date-fns'
 
 export async function GET() {
   try {
@@ -19,7 +20,7 @@ export async function GET() {
     let expiringMembers = 0
     let expiredMembers = 0
     let activePT = 0
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
     members.forEach((m: any) => {
       if (m.status === 'active') activeMembers++
       if (m.status === 'expiring') expiringMembers++
@@ -34,30 +35,61 @@ export async function GET() {
       { name: 'Expired', value: expiredMembers, fill: '#ef4444' }, // text-red-500
     ]
 
-    // 3. Mock Revenue Data (Until Phase 10 Payment Gateway Integration)
-    const revenueData = [
-      { month: 'Jan', revenue: 45000 },
-      { month: 'Feb', revenue: 52000 },
-      { month: 'Mar', revenue: 48000 },
-      { month: 'Apr', revenue: 61000 },
-      { month: 'May', revenue: 59000 },
-      { month: 'Jun', revenue: 75000 },
-      { month: 'Jul', revenue: 82000 },
-    ]
+    // 3. Dynamic Revenue Data (Last 7 Months)
+    const today = new Date()
+    // Calculate the start date for 6 months ago (which gives us 7 months total including current)
+    const sevenMonthsAgo = startOfMonth(subMonths(today, 6)).toISOString()
+
+    // Fetch all successful payments from the last 7 months
+    const { data: payments, error: paymentsError } = await db
+      .from('payments')
+      .select('amount, created_at')
+      .eq('status', 'paid')
+      .gte('created_at', sevenMonthsAgo)
+
+    if (paymentsError) throw paymentsError
+
+    // Initialize an array with the last 7 months set to 0 revenue
+    const revenueMap = new Map()
+    for (let i = 6; i >= 0; i--) {
+      const monthDate = subMonths(today, i)
+      const monthName = format(monthDate, 'MMM') // e.g., 'Jan', 'Feb'
+      revenueMap.set(monthName, 0)
+    }
+
+    // Populate the map with actual revenue
+    if (payments) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      payments.forEach((payment: any) => {
+        const paymentMonth = format(new Date(payment.created_at), 'MMM')
+        if (revenueMap.has(paymentMonth)) {
+          revenueMap.set(paymentMonth, revenueMap.get(paymentMonth) + Number(payment.amount))
+        }
+      })
+    }
+
+    // Convert map back to the array format required by Recharts
+    const revenueData = Array.from(revenueMap, ([month, revenue]) => ({ month, revenue }))
+
+    // Get the current month's revenue for the KPI card
+    const currentMonthName = format(today, 'MMM')
+    const currentMonthlyRevenue = revenueMap.get(currentMonthName) || 0
 
     return NextResponse.json({
       summary: {
         total_active: activeMembers,
         total_expiring: expiringMembers,
         total_expired: expiredMembers,
-        active_pt: activePT
+        active_pt: activePT,
+        monthly_revenue: currentMonthlyRevenue // 🌟 ADDED: Dynamic current month revenue
       },
       charts: {
         status: statusChartData,
-        revenue: revenueData
+        revenue: revenueData // 🌟 ADDED: Dynamic 7-month trend
       }
     })
   } catch (error: unknown) {
+    console.error('Reports API Error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json({ error: errorMessage }, { status: 500 })
   }

@@ -1,10 +1,10 @@
 // src/components/pt/PTTab.tsx
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { AssignPT } from "./AssignPT"
-import { Dumbbell, Calendar, CheckCircle2, AlertCircle, Loader2, Check } from "lucide-react"
+import { Dumbbell, CheckCircle2, AlertCircle, Loader2, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 
@@ -26,10 +26,12 @@ export function PTTab({ memberId }: { memberId: string }) {
   const [assignment, setAssignment] = useState<PTAssignment | null>(null)
   const [loading, setLoading] = useState(true)
   const [isLogging, setIsLogging] = useState(false)
-  const supabase = createClient()
 
-  const fetchPTData = async () => {
+  // 🌟 FIX: Wrapped in useCallback so React knows it's safe to use in useEffect
+  const fetchPTData = useCallback(async () => {
     setLoading(true)
+    const supabase = createClient() // Moved inside to prevent dependency loops
+    
     const { data, error } = await supabase
       .from('pt_assignments')
       .select(`
@@ -46,11 +48,15 @@ export function PTTab({ memberId }: { memberId: string }) {
       setAssignment(null)
     }
     setLoading(false)
-  }
-
-  useEffect(() => {
-    fetchPTData()
   }, [memberId])
+
+  // 🌟 FIX: fetchPTData is now safely in the dependency array
+  useEffect(() => {
+    const loadData = async () => {
+      await fetchPTData();
+    }
+    loadData();
+  }, [fetchPTData]);
 
   const handleLogSession = async () => {
     if (!assignment) return
@@ -74,6 +80,8 @@ export function PTTab({ memberId }: { memberId: string }) {
       }
       
       fetchPTData() // Refresh UI instantly
+    // 🌟 FIX: Added the specific ESLint ignore comment exactly one line above the 'any'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message)
     } finally {

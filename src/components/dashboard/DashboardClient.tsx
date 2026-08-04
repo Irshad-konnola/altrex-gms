@@ -18,15 +18,18 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-6">
+      
       {/* Header and Filter */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Good morning, Owner</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">
+            Good morning, <span className="bg-gradient-to-r from-gold-300 to-gold-600 bg-clip-text text-transparent">Owner</span>
+          </h1>
         </div>
         <div className="flex items-center gap-3">
           <DashboardFilter value={dateRange} onChange={setDateRange} />
           <Link href="/members/add">
-            <Button className="bg-gold-500 text-dark-900 hover:bg-gold-600 font-bold px-5 rounded-full">
+            <Button className="bg-gradient-to-b from-gold-400 to-gold-600 hover:from-gold-300 hover:to-gold-500 text-dark-950 shadow-[0_0_15px_rgba(234,179,8,0.25)] border border-gold-300/50 font-bold px-5 rounded-xl transition-all duration-300">
               <Plus className="h-4 w-4 mr-1.5" strokeWidth={3} />
               Add member
             </Button>
@@ -34,56 +37,52 @@ export function DashboardClient() {
         </div>
       </div>
 
-      {/* Stat Cards Row */}
-      <div className="flex overflow-x-auto pb-4 md:pb-0 md:grid md:grid-cols-4 gap-4 snap-x">
-        <div className="min-w-[240px] md:min-w-0 snap-start">
-          <StatCard 
-            title="Total Members" 
-            value={stats?.totalMembers} 
-            icon={<Users className="h-4 w-4" />}
-            trend={4.2}
-            subtext="+12 this month"
-            isLoading={isLoading} 
-          />
-        </div>
-        <div className="min-w-[240px] md:min-w-0 snap-start">
-          <StatCard 
-            title="Active Members" 
-            value={stats?.activeMembers} 
-            icon={<UserCheck className="h-4 w-4" />}
-            trend={4.2}
-            subtext="92% retention"
-            isLoading={isLoading} 
-          />
-        </div>
-        <div className="min-w-[240px] md:min-w-0 snap-start">
-          <StatCard 
-            title="Expiring Soon" 
-            value={stats?.expiringSoon} 
-            icon={<Clock className="h-4 w-4" />}
-            subtext="Within 7 days"
-            isLoading={isLoading} 
-          />
-        </div>
-        <div className="min-w-[240px] md:min-w-0 snap-start">
-          <StatCard 
-            title="Revenue (Month)" 
-            value={stats?.revenue} 
-            type="currency" 
-            icon={<IndianRupee className="h-4 w-4" />}
-            trend={4.2}
-            subtext="₹4,500 today"
-            isLoading={isLoading} 
-          />
-        </div>
+      {/* Stat Cards Row - Now completely responsive and vertically stacked on mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <StatCard 
+          title="Total Members" 
+          value={stats?.totalMembers} 
+          icon={<Users className="h-4 w-4 text-dark-900" />}
+          // trend={stats?.trends?.totalMembers} 
+          // subtext={stats?.newThisMonth ? `+${stats.newThisMonth} this month` : 'Active directory'}
+          isLoading={isLoading} 
+        />
+        <StatCard 
+          title="Active Members" 
+          value={stats?.activeMembers} 
+          icon={<UserCheck className="h-4 w-4 text-dark-900" />}
+          // trend={stats?.trends?.activeMembers}
+          // subtext={stats?.retentionRate ? `${stats.retentionRate}% retention` : 'Currently active'}
+          isLoading={isLoading} 
+        />
+        <StatCard 
+          title="Expiring Soon" 
+          value={stats?.expiringSoon} 
+          icon={<Clock className="h-4 w-4 text-dark-900" />}
+          subtext="Within 7 days"
+          isLoading={isLoading} 
+        />
+        <StatCard 
+          title="Revenue (Month)" 
+          value={stats?.revenue} 
+          type="currency" 
+          icon={<IndianRupee className="h-4 w-4 text-dark-900" />}
+          // trend={stats?.trends?.revenue}
+          // subtext={stats?.revenueToday ? `₹${stats.revenueToday} today` : 'Estimated income'}
+          isLoading={isLoading} 
+        />
       </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 flex flex-col">
+        <div className="lg:col-span-2 flex flex-col gap-6">
           <LiveFeed />
-          <RevenueChart />
-        </div>
+<RevenueChart 
+            data={stats?.revenueChartData} 
+            totalRevenue={stats?.revenue}
+            trendPercentage={stats?.trends?.revenue} // Assuming your hook provides this
+            isLoading={isLoading}
+          />        </div>
 
         <div className="space-y-6">
           <ExpiringPanel />

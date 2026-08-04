@@ -10,6 +10,7 @@ export type PaymentWithDetails = {
   status: 'paid' | 'pending' | 'failed' | 'refunded'
   payment_date: string
   created_at: string
+  description:string
   members?: { full_name: string; photo_url: string | null }
   memberships?: { 
     membership_plans?: { name: string } 
@@ -25,7 +26,7 @@ export function usePayments() {
       const { data, error } = await supabase
         .from('payments')
         .select(`
-          id, member_id, amount, method, status, payment_date, created_at,
+          id, member_id, amount, method, status, payment_date, created_at,description,
           members:member_id (full_name, photo_url),
           memberships:membership_id (
             membership_plans:plan_id (name)

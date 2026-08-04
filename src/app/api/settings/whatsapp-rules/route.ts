@@ -16,16 +16,30 @@ export async function GET() {
       .limit(1)
       .single()
     
+    // Define the new default rules matching your Meta templates
+    const defaultRules = {
+      altrex_renewal_7d: true,
+      altrex_renewal_3d: true,
+      altrex_renewal_today: true,
+      altrex_inactivity_3d: false,
+      altrex_inactivity_7d: true,
+      altrex_welcome: true,
+      payment_receipt: true,
+      altrex_pt_assigned: true,
+      altrex_pt_feedback: true,
+      altrex_owner_daily_summary: true,
+      altrex_birthday: false
+    }
+
     if (error || !data?.automation_rules) {
       // Return defaults if not found
-      return NextResponse.json({
-        renewal7d: true, renewal3d: true, renewalToday: true,
-        inactivity3d: false, inactivity7d: true, paymentReceipt: true, ownerSummary: true
-      })
+      return NextResponse.json(defaultRules)
     }
     
-    return NextResponse.json(data.automation_rules)
-  } catch (error) {
+    // Merge existing rules with defaults so new keys are automatically picked up,
+    // ignoring the old camelCase keys stored in the database.
+    return NextResponse.json({ ...defaultRules, ...data.automation_rules })
+  } catch  {
     return NextResponse.json({ error: 'Failed to fetch rules' }, { status: 500 })
   }
 }
@@ -47,7 +61,7 @@ export async function PATCH(request: Request) {
     }
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch  {
     return NextResponse.json({ error: 'Failed to update rules' }, { status: 500 })
   }
 }

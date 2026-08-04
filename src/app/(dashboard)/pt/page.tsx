@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Dumbbell, Users, Settings, User, Search, AlertCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import Image from "next/image"
 
 type ActivePTMember = {
   id: string
@@ -38,7 +39,7 @@ export default function PTDashboardPage() {
           const data = await res.json()
           setPtMembers(data)
         }
-      } catch (error) {
+      } catch  {
         console.error("Failed to load active PT members")
       } finally {
         setLoading(false)
@@ -48,7 +49,7 @@ export default function PTDashboardPage() {
   }, [])
 
   const filteredMembers = ptMembers.filter(record => 
-    record.members.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    record.members?.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     record.trainer_name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
@@ -126,15 +127,15 @@ export default function PTDashboardPage() {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-dark-700 flex items-center justify-center overflow-hidden border border-dark-600">
-                          {record.members.photo_url ? (
-                            <img src={record.members.photo_url} alt="Profile" className="w-full h-full object-cover" />
+                          {record.members?.photo_url ? (
+                            <Image src={record.members.photo_url} alt="Profile" fill className="w-full h-full object-cover" />
                           ) : (
                             <User className="w-4 h-4 text-dark-400" />
                           )}
                         </div>
                         <div>
-                          <p className="font-medium text-white">{record.members.full_name}</p>
-                          <p className="text-xs text-dark-400">{record.members.phone}</p>
+                          <p className="font-medium text-white">{record.members?.full_name}</p>
+                          <p className="text-xs text-dark-400">{record.members?.phone}</p>
                         </div>
                       </div>
                     </td>
@@ -158,7 +159,7 @@ export default function PTDashboardPage() {
                       </div>
                     </td>
                     <td className="p-4 text-right">
-                      <Link href={`/members/${record.members.id}`}>
+                      <Link href={`/members/${record.members?.id}`}>
                         <Button size="sm" className="bg-dark-700 hover:bg-gold-500 hover:text-dark-900 text-white border border-dark-600">
                           View Profile
                         </Button>

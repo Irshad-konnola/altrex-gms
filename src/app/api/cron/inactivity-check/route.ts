@@ -46,8 +46,6 @@ export async function GET(request: Request) {
 
       if (!membership?.end_date) continue
 
-      // Calculate how many days are left on their plan (for the WhatsApp variable)
-      const daysLeft = differenceInDays(new Date(membership.end_date), today)
 
       // 3. Fetch their MOST RECENT check-in
       const { data: lastCheckIn } = await supabaseAdmin
@@ -63,10 +61,10 @@ export async function GET(request: Request) {
       // 4. Calculate days since last check-in
       const daysSinceLastVisit = differenceInDays(today, new Date(lastCheckIn.check_in_at))
 
-      // 5. Send templates for exactly 3 or 7 days of inactivity
+     // 5. Send templates for exactly 3 or 7 days of inactivity
       if (daysSinceLastVisit === 3 || daysSinceLastVisit === 7) {
-        const templateName = daysSinceLastVisit === 3 ? 'inactivity_3d' : 'inactivity_7d'
-        const dateVariable = daysSinceLastVisit === 3 ? daysLeft.toString() : membership.end_date // based on your template design
+        // 🌟 FIX: Updated to match exact Meta template names
+        const templateName = daysSinceLastVisit === 3 ? 'altrex_inactivity_3d' : 'altrex_inactivity_7d'
 
         try {
           await sendTemplateMessage({
@@ -76,8 +74,8 @@ export async function GET(request: Request) {
               {
                 type: 'body',
                 parameters: [
-                  { type: 'text', text: member.full_name },
-                  { type: 'text', text: dateVariable } // Matches the variables in your master plan templates
+                  // 🌟 FIX: Only passing the name, as the template expects {{1}}
+                  { type: 'text', text: member.full_name } 
                 ]
               }
             ]

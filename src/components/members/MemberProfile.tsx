@@ -1,20 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any, @next/next/no-img-element */
 "use client"
 
 import { useState } from "react"
-import { User,ScanFace, CalendarDays, Phone, Mail, MapPin, Activity, CheckCircle2, History, CreditCard, Dumbbell } from "lucide-react"
+import { User, ScanFace, Phone, Mail, MapPin, Activity, CheckCircle2, Dumbbell } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { MemberBadge } from "./MemberBadge"
 import { AdjustMembershipModal } from "./AdjustMembershipModal"
 import { EditMemberModal } from "./EditMemberModal"
 import { useRouter } from "next/navigation"
-import { updateMemberAction, archiveMemberAction } from "@/app/(dashboard)/members/actions"
+import { archiveMemberAction } from "@/app/(dashboard)/members/actions"
 import { toast } from "sonner"
-// Import the new PT Tab component
 import { PTTab } from "@/components/pt/PTTab"
-
-// Added "PT" to the tabs array
+import { MemberPaymentsTab } from "./MemberPaymentsTab"
+import { MemberAttendanceTab } from "./MemberAttendanceTab"
+import { RenewPlanModal } from "./RenewPlanModal"
 const TABS = ["Overview", "Attendance", "Payments", "PT"]
 
 export function MemberProfile({ initialData }: { initialData: any }) {
@@ -24,20 +24,15 @@ export function MemberProfile({ initialData }: { initialData: any }) {
   const member = initialData
 
   const handleArchive = async () => {
-    if (!window.confirm("Are you sure you want to archive this member? Their history will be saved, but they will be removed from the active list.")) {
-      return
-    }
-
+    if (!window.confirm("Are you sure you want to archive this member?")) return
     setIsArchiving(true)
     try {
       const result = await archiveMemberAction(member.id)
       if (result.success) {
         toast.success("Member archived successfully.")
         router.push("/members") 
-      } else {
-        toast.error(`Error: ${result.error}`)
-      }
-    } catch (error) {
+      } else toast.error(`Error: ${result.error}`)
+    } catch {
       toast.error("Failed to archive member.")
     } finally {
       setIsArchiving(false)
@@ -48,11 +43,11 @@ export function MemberProfile({ initialData }: { initialData: any }) {
     <div className="space-y-6">
       
       {/* Top Header Card */}
-      <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row gap-6 sm:items-center justify-between relative overflow-hidden">
+      <div className="bg-dark-950 border border-dark-800 rounded-2xl p-4 sm:p-8 flex flex-col xl:flex-row gap-6 xl:items-center justify-between relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/5 blur-[80px] rounded-full pointer-events-none" />
         
-        <div className="flex items-center gap-6 z-10">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-dark-900 border-2 border-dark-700 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start xl:items-center gap-6 z-10 text-center sm:text-left">
+          <div className="w-24 h-24 rounded-full bg-dark-900 border-2 border-dark-700 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
             {member.photo_url ? (
               <img src={member.photo_url} alt={member.full_name} className="w-full h-full object-cover" />
             ) : (
@@ -60,13 +55,13 @@ export function MemberProfile({ initialData }: { initialData: any }) {
             )}
           </div>
           
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
               <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{member.full_name}</h1>
               <MemberBadge status={member.status} />
             </div>
             
-            <div className="flex flex-wrap items-center gap-4 text-sm text-dark-300">
+            <div className="flex flex-wrap justify-center sm:justify-start items-center gap-4 text-sm text-dark-300">
               <span className="flex items-center gap-1.5"><Phone className="w-4 h-4 text-dark-400" /> {member.phone}</span>
               {member.device_user_id && (
                 <span className="flex items-center gap-1.5 text-green-400"><ScanFace className="w-4 h-4" /> Face ID: {member.device_user_id}</span>
@@ -75,43 +70,40 @@ export function MemberProfile({ initialData }: { initialData: any }) {
                 <span className="flex items-center gap-1.5 text-gold-400"><Activity className="w-4 h-4" /> BMI: {member.bmi}</span>
               )}
             </div>
-            </div>
           </div>
+        </div>
 
-        <div className="flex flex-col gap-3 w-full sm:w-auto z-10">
-          <Button className="bg-gold-500 hover:bg-gold-600 text-dark-950 font-bold w-full sm:w-40 rounded-xl shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-            Renew Plan
-          </Button>
+        {/* Mobile Responsive Action Buttons */}
+       <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto z-10 mt-4 xl:mt-0 justify-start xl:justify-end">
+          <RenewPlanModal memberId={member.id} 
+          memberName={member.full_name}
+          memberPhone={member.phone}
+          />
           <AdjustMembershipModal memberId={member.id} currentEndDate={member.end_date} />
-         <EditMemberModal member={member} />
-         <Button 
+          <EditMemberModal member={member} />
+          <Button 
             onClick={handleArchive} 
             disabled={isArchiving}
             variant="ghost" 
-            className="text-red-400 hover:text-red-300 hover:bg-red-400/10 border border-red-900/30 w-full sm:w-auto rounded-xl"
+            className="text-red-400 hover:text-red-300 hover:bg-red-400/10 border border-red-900/30 rounded-xl px-4 h-10 py-2"
           >
             {isArchiving ? "Archiving..." : "Archive"}
           </Button>
         </div>
       </div>
 
-      {/* Tabs & Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Left Column (Main Content) */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 overflow-hidden">
           
-          {/* Custom Tab Navigation */}
-          <div className="flex overflow-x-auto no-scrollbar gap-2 p-1.5 bg-dark-950 border border-dark-800 rounded-xl w-fit">
+          {/* Mobile Responsive Tabs Wrapper */}
+          <div className="flex overflow-x-auto no-scrollbar gap-2 p-1.5 bg-dark-950 border border-dark-800 rounded-xl w-full sm:w-fit">
             {TABS.map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={cn(
-                  "px-6 py-2 rounded-lg text-sm font-semibold transition-all",
-                  activeTab === tab 
-                    ? "bg-dark-800 text-gold-500 shadow-sm" 
-                    : "text-dark-400 hover:text-white"
+                  "px-4 sm:px-6 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap",
+                  activeTab === tab ? "bg-dark-800 text-gold-500 shadow-sm" : "text-dark-400 hover:text-white"
                 )}
               >
                 {tab}
@@ -119,7 +111,6 @@ export function MemberProfile({ initialData }: { initialData: any }) {
             ))}
           </div>
 
-          {/* OVERVIEW TAB */}
           {activeTab === "Overview" && (
             <div className="space-y-6 animate-in fade-in duration-300">
               <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6">
@@ -133,7 +124,7 @@ export function MemberProfile({ initialData }: { initialData: any }) {
                   </div>
                   <div>
                     <p className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-1">Date of Birth</p>
-                    <p className="text-dark-50">{member.date_of_birth || "N/A"}</p>
+                    <p className="text-dark-50">{member.dob || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-1">Gender</p>
@@ -141,7 +132,7 @@ export function MemberProfile({ initialData }: { initialData: any }) {
                   </div>
                   <div>
                     <p className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-1">Address</p>
-                    <p className="text-dark-50 flex items-start gap-2"><MapPin className="w-4 h-4 text-dark-400 shrink-0 mt-0.5" /> {member.address || "N/A"}</p>
+                    <p className="text-dark-50 flex items-start gap-2"><MapPin className="w-4 h-4 text-dark-400 shrink-0 mt-0.5" /> {member.address || "No address provided"}</p>
                   </div>
                   <div className="sm:col-span-2 pt-4 border-t border-dark-800">
                     <p className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-2">Health Notes / Injuries</p>
@@ -154,35 +145,15 @@ export function MemberProfile({ initialData }: { initialData: any }) {
             </div>
           )}
 
-          {activeTab === "Attendance" && (
-            <div className="bg-dark-950 border border-dark-800 rounded-2xl p-12 text-center animate-in fade-in duration-300">
-              <History className="w-12 h-12 text-dark-600 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-white mb-2">Attendance History</h3>
-              <p className="text-dark-400 text-sm">Real check-in logs will appear here once connected to the eSSL device.</p>
-            </div>
+       {activeTab === "Attendance" && (
+            <MemberAttendanceTab memberId={member.id} />
           )}
 
-          {activeTab === "Payments" && (
-            <div className="bg-dark-950 border border-dark-800 rounded-2xl p-12 text-center animate-in fade-in duration-300">
-              <CreditCard className="w-12 h-12 text-dark-600 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-white mb-2">Payment History</h3>
-              <p className="text-dark-400 text-sm">Past transactions and receipt statuses will be listed here.</p>
-            </div>
-          )}
-
-          {/* NEW PT TAB */}
-          {activeTab === "PT" && (
-            <div className="animate-in fade-in duration-300">
-              <PTTab memberId={member.id} />
-            </div>
-          )}
-
+          {activeTab === "Payments" && <MemberPaymentsTab memberId={member.id} />}
+          {activeTab === "PT" && <PTTab memberId={member.id} />}
         </div>
 
-        {/* Right Column (Side Widgets) */}
         <div className="space-y-6">
-          
-          {/* Active Plan Widget */}
           <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
               <Activity className="w-4 h-4 text-gold-500" /> Current Plan
@@ -208,13 +179,11 @@ export function MemberProfile({ initialData }: { initialData: any }) {
             </div>
           </div>
 
-          {/* PT Widget (Conditionally rendered) */}
           {member.is_pt_member && (
             <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                 <Dumbbell className="w-4 h-4 text-gold-500" /> Personal Training
               </h3>
-              
               <div className="space-y-4">
                 <div className="flex justify-between items-center pb-3 border-b border-dark-800">
                   <span className="text-dark-400 text-sm font-medium">Status</span>
@@ -227,7 +196,6 @@ export function MemberProfile({ initialData }: { initialData: any }) {
               </div>
             </div>
           )}
-
         </div>
       </div>
     </div>

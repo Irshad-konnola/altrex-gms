@@ -27,22 +27,26 @@ export function AssignPT({ memberId, onAssigned }: { memberId: string, onAssigne
     start_date: new Date().toISOString().split('T')[0]
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  useEffect(() => {
-    if (isOpen && packages.length === 0) {
-      setLoading(true)
-      fetch('/api/pt/packages')
-        .then(res => res.json())
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .then((data: any[]) => {
-          const activePackages = data.filter(p => p.is_active)
+ useEffect(() => {
+    const loadPackages = async () => {
+      if (isOpen && packages.length === 0) {
+        setLoading(true)
+        try {
+          const res = await fetch('/api/pt/packages')
+          const data = await res.json()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const activePackages = data.filter((p: any) => p.is_active)
           setPackages(activePackages)
           if (activePackages.length > 0) {
             setFormData(prev => ({ ...prev, pt_package_id: activePackages[0].id }))
           }
-        })
-        .finally(() => setLoading(false))
+        } finally {
+          setLoading(false)
+        }
+      }
     }
+    
+    loadPackages()
   }, [isOpen, packages.length])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,7 +65,7 @@ export function AssignPT({ memberId, onAssigned }: { memberId: string, onAssigne
       toast.success("PT Package assigned successfully!")
       setIsOpen(false)
       if (onAssigned) onAssigned()
-    } catch (error) {
+    } catch  {
       toast.error("Error assigning PT package")
     } finally {
       setIsSubmitting(false)

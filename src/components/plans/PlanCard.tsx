@@ -67,22 +67,7 @@ export function PlanCard({ plan, isPopular, onEdit }: PlanCardProps) {
           ))}
         </div>
 
-        {/* Stats Row (Mocked data for now, hook up to DB later) */}
-        <div className="grid grid-cols-3 gap-2 py-4 border-t border-dark-600 mb-6">
-          <div className="text-center">
-            <p className="text-white font-bold text-sm">--</p>
-            <p className="text-dark-400 text-[10px] uppercase mt-0.5">Members</p>
-          </div>
-          <div className="text-center">
-            <p className="text-white font-bold text-sm">--%</p>
-            <p className="text-dark-400 text-[10px] uppercase mt-0.5">Retention</p>
-          </div>
-          <div className="text-center">
-            <p className="text-white font-bold text-sm">--</p>
-            <p className="text-dark-400 text-[10px] uppercase mt-0.5">Avg Stay</p>
-          </div>
-        </div>
-
+      
         {/* Full-width Button */}
         <Button 
           className={cn(

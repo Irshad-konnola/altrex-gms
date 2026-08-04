@@ -9,10 +9,8 @@ import {
   ClipboardCheck, 
   CreditCard, 
   MessageCircle, 
-  Settings,
   Dumbbell,
   BarChart3,
-  MonitorSmartphone,
   LogOut
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
@@ -27,8 +25,8 @@ const routes = [
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle, role: "owner" },
   { href: "/pt", label: "Personal Training", icon: Dumbbell, role: "both" },
   { href: "/reports", label: "Reports", icon: BarChart3, role: "owner" },
-  { href: "/device", label: "eSSL Device", icon: MonitorSmartphone, role: "owner" },
-  { href: "/settings", label: "Settings", icon: Settings, role: "owner" },
+  // { href: "/device", label: "eSSL Device", icon: MonitorSmartphone, role: "owner" },
+  // { href: "/settings", label: "Settings", icon: Settings, role: "owner" },
 ]
 
 export function Sidebar({ userRole = "owner" }: { userRole?: string }) {

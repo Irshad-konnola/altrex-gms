@@ -1,8 +1,9 @@
+// src/components/members/MemberTable.tsx
 /* eslint-disable @next/next/no-img-element */
 "use client"
 
 import { useRouter } from "next/navigation"
-import { MoreHorizontal, User, ScanFace } from "lucide-react"
+import { User, ScanFace, Eye,Users } from "lucide-react"
 import { MemberBadge } from "./MemberBadge"
 
 export interface MemberRow {
@@ -18,27 +19,30 @@ export interface MemberRow {
 }
 
 export function MemberTable({ members }: { members: MemberRow[] }) {
+  console.log(members,"member details");
+  
   const router = useRouter()
 
   if (members.length === 0) {
     return (
-      <div className="w-full p-8 text-center bg-dark-950 border border-dark-800 rounded-xl">
-        <p className="text-dark-300">No members found matching your criteria.</p>
+      <div className="w-full p-12 text-center bg-dark-950 border border-dark-800 rounded-xl">
+        <Users className="w-10 h-10 text-dark-600 mx-auto mb-3" />
+        <p className="text-white font-medium">No members found matching your criteria.</p>
       </div>
     )
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-xl border border-dark-800 bg-dark-950">
+    <div className="w-full overflow-hidden rounded-xl border border-dark-800 bg-dark-950 shadow-sm">
       <table className="w-full text-sm text-left">
         <thead className="text-xs text-dark-300 uppercase bg-dark-900 border-b border-dark-800">
           <tr>
-            <th className="px-6 py-4 font-medium">Member</th>
-            <th className="px-6 py-4 font-medium">Contact</th>
-            <th className="px-6 py-4 font-medium">Plan</th>
-            <th className="px-6 py-4 font-medium">Status</th>
-            <th className="px-6 py-4 font-medium">Time Left</th>
-            <th className="px-6 py-4 font-medium text-right">Actions</th>
+            <th className="px-6 py-4 font-bold tracking-wider">Member</th>
+            <th className="px-6 py-4 font-bold tracking-wider">Contact</th>
+            <th className="px-6 py-4 font-bold tracking-wider">Plan</th>
+            <th className="px-6 py-4 font-bold tracking-wider">Status</th>
+            <th className="px-6 py-4 font-bold tracking-wider">Time Left</th>
+            <th className="px-6 py-4 font-bold tracking-wider text-right">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-dark-800">
@@ -58,27 +62,52 @@ export function MemberTable({ members }: { members: MemberRow[] }) {
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-dark-50">{member.full_name}</span>
-                    {member.is_pt_member && <span className="w-2 h-2 rounded-full bg-gold-500" title="PT Member" />}
+                    <span className="font-semibold text-dark-50">{member.full_name}</span>
+                    {member.is_pt_member && <span className="w-2 h-2 rounded-full bg-gold-500 shadow-[0_0_5px_rgba(234,179,8,0.5)]" title="PT Member" />}
                   </div>
-                  {/* NEW: Device Connection Indicator */}
                   {member.device_user_id ? (
-                    <span className="flex items-center gap-1 text-[10px] text-green-500 mt-0.5 font-medium">
+                    <span className="flex items-center gap-1 text-[10px] text-green-500 mt-0.5 font-medium tracking-wide">
                       <ScanFace className="w-3 h-3" /> Face ID: {member.device_user_id}
                     </span>
                   ) : (
-                    <span className="text-[10px] text-dark-400 mt-0.5">Not Connected</span>
+                    <span className="text-[10px] text-dark-400 mt-0.5 uppercase font-medium tracking-wide">Not Connected</span>
                   )}
                 </div>
               </td>
               <td className="px-6 py-4 text-dark-200">{member.phone}</td>
-              <td className="px-6 py-4 text-dark-200">{member.plan_name}</td>
+              <td className="px-6 py-4 text-dark-200 font-medium">{member.plan_name}</td>
               <td className="px-6 py-4"><MemberBadge status={member.status} /></td>
               <td className="px-6 py-4">
-                <span className={member.days_left <= 7 ? "text-yellow-400 font-medium" : "text-dark-200"}>{member.days_left} days</span>
+                <span className={member.days_left <= 7 ? "text-yellow-400 font-bold" : "text-dark-200 font-medium"}>
+                  {member.days_left} days
+                </span>
               </td>
-              <td className="px-6 py-4 text-right">
-                <button className="text-dark-400 hover:text-gold-500 p-1 transition-colors"><MoreHorizontal className="w-5 h-5" /></button>
+              
+              {/* Fixed Action Column */}
+              <td className="px-6 py-4">
+                <div className="flex items-center justify-end gap-2">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevents the row click from firing
+                      router.push(`/members/${member.id}`);
+                    }}
+                    className="p-2 text-dark-400 hover:text-white bg-dark-900 hover:bg-dark-700 rounded-lg transition-all border border-dark-700 hover:border-dark-600"
+                    title="View Profile"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  {/* <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Edit logic routed to profile for now, where edit modal exists
+                      router.push(`/members/${member.id}`);
+                    }}
+                    className="p-2 text-dark-400 hover:text-gold-500 bg-dark-900 hover:bg-dark-700 rounded-lg transition-all border border-dark-700 hover:border-gold-500/50"
+                    title="Edit Member"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button> */}
+                </div>
               </td>
             </tr>
           ))}

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { 
   Menu, LayoutDashboard, Users, ClipboardCheck, CreditCard, 
-  MessageCircle, Settings, Dumbbell, BarChart3, MonitorSmartphone, LogOut 
+  MessageCircle,  Dumbbell, BarChart3, LogOut 
 } from "lucide-react"
 import {
   Sheet,
@@ -26,8 +26,8 @@ const routes = [
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle, role: "owner" },
   { href: "/pt", label: "Personal Training", icon: Dumbbell, role: "both" },
   { href: "/reports", label: "Reports", icon: BarChart3, role: "owner" },
-  { href: "/device", label: "eSSL Device", icon: MonitorSmartphone, role: "owner" },
-  { href: "/settings", label: "Settings", icon: Settings, role: "owner" },
+  // { href: "/device", label: "eSSL Device", icon: MonitorSmartphone, role: "owner" },
+  // { href: "/settings", label: "Settings", icon: Settings, role: "owner" },
 ]
 
 export function MobileMenu({ userRole = "front_desk" }: { userRole: string }) {

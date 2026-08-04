@@ -123,7 +123,7 @@ const fileName = generateFileName(fileExt!)
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger className="inline-flex items-center justify-center h-11 px-6 py-2 text-sm font-medium border border-dark-700 text-white hover:bg-dark-800 w-full sm:w-auto rounded-xl transition-colors">
+      <DialogTrigger className="inline-flex items-center justify-center h-10 px-4 py-2 text-sm font-medium border border-dark-700 text-white hover:bg-dark-800 hover:text-gold-500 w-full sm:w-auto rounded-xl transition-colors">
         <Edit2 className="w-4 h-4 mr-2" />
         Edit Profile
       </DialogTrigger>

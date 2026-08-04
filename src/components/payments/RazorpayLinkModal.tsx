@@ -1,21 +1,49 @@
-// src/components/payments/RazorpayLinkModal.tsx
 'use client'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { QRCodeSVG } from 'qrcode.react'
-import { Copy, Check, MessageCircle, ExternalLink } from 'lucide-react'
-import { useState } from 'react'
+import { Copy, Check, MessageCircle, ExternalLink, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 interface RazorpayLinkModalProps {
   isOpen: boolean
   onClose: () => void
   paymentUrl: string
   memberPhone?: string
+  memberId?: string // 🌟 NEW: We need this to verify the correct payment came in
 }
 
-export function RazorpayLinkModal({ isOpen, onClose, paymentUrl, memberPhone }: RazorpayLinkModalProps) {
+export function RazorpayLinkModal({ isOpen, onClose, paymentUrl, memberPhone, memberId }: RazorpayLinkModalProps) {
   const [copied, setCopied] = useState(false)
+  const supabase = createClient()
+
+  // 🌟 NEW: Realtime Listener for Auto-Close
+  useEffect(() => {
+    if (!isOpen || !memberId) return;
+
+    // Listen to the payments table for any new inserts
+    const channel = supabase
+      .channel(`qr-listener-${memberId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'payments' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (payload: any) => {
+          // If the new payment matches the member we generated the QR code for...
+          if (payload.new.member_id === memberId) {
+            console.log("Payment confirmed via Webhook, closing QR modal.");
+            onClose(); // Automatically close the modal!
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    }
+  }, [isOpen, memberId, supabase, onClose]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(paymentUrl)
@@ -25,7 +53,7 @@ export function RazorpayLinkModal({ isOpen, onClose, paymentUrl, memberPhone }: 
 
   const handleWhatsApp = () => {
     if (!memberPhone) return
-    const cleanPhone = memberPhone.replace(/\D/g, '') // strip everything except numbers
+    const cleanPhone = memberPhone.replace(/\D/g, '') 
     const message = encodeURIComponent(`Hi! Here is your payment link for Altrex Fitness: ${paymentUrl}`)
     window.open(`https://wa.me/91${cleanPhone}?text=${message}`, '_blank')
   }
@@ -40,7 +68,14 @@ export function RazorpayLinkModal({ isOpen, onClose, paymentUrl, memberPhone }: 
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col items-center justify-center py-6 space-y-6">
+        <div className="flex flex-col items-center justify-center py-6 space-y-6 relative">
+          
+          {/* Waiting animation indicator */}
+          <div className="absolute top-2 right-2 flex items-center gap-2 text-xs text-gold-500 font-medium animate-pulse">
+            <Loader2 className="w-3 h-3 animate-spin" />
+            Waiting for payment...
+          </div>
+
           {/* QR Code Container */}
           <div className="bg-white p-4 rounded-xl shadow-lg">
             <QRCodeSVG 

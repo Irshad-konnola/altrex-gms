@@ -36,7 +36,7 @@ export default function WhatsAppPage() {
         const res = await fetch('/api/settings/whatsapp-rules')
         const data = await res.json()
         setToggles(data)
-      } catch (error) {
+      } catch  {
         toast.error("Failed to load automation rules")
       } finally {
         setLoading(false)
@@ -61,21 +61,26 @@ export default function WhatsAppPage() {
       if (!res.ok) throw new Error("Failed to save")
       toast.success("Automation rule updated")
       
-    } catch (error) {
+    } catch{
       // Revert UI on failure
       setToggles({ ...toggles })
       toast.error("Failed to save changes")
     }
   }
 
+  // 🌟 FIX: Updated keys to perfectly match the Meta Template names
   const automationRules = [
-    { key: 'renewal7d', label: 'Renewal Reminder (7 Days)', category: 'Utility', timing: '7 days before expiry' },
-    { key: 'renewal3d', label: 'Renewal Reminder (3 Days)', category: 'Utility', timing: '3 days before expiry' },
-    { key: 'renewalToday', label: 'Renewal Reminder (Today)', category: 'Utility', timing: 'On expiry day' },
-    { key: 'inactivity3d', label: 'Inactivity Alert (3 Days)', category: 'Marketing', timing: 'After 3 days of no visits' },
-    { key: 'inactivity7d', label: 'Inactivity Alert (7 Days)', category: 'Marketing', timing: 'After 7 days of no visits' },
-    { key: 'paymentReceipt', label: 'Payment Receipts', category: 'Utility', timing: 'On payment record' },
-    { key: 'ownerSummary', label: 'Owner Daily Summary', category: 'Utility', timing: '9:30 PM Daily' },
+    { key: 'altrex_renewal_7d', label: 'Renewal Reminder (7 Days)', category: 'Utility', timing: '7 days before expiry' },
+    { key: 'altrex_renewal_3d', label: 'Renewal Reminder (3 Days)', category: 'Utility', timing: '3 days before expiry' },
+    { key: 'altrex_renewal_today', label: 'Renewal Reminder (Today)', category: 'Utility', timing: 'On expiry day' },
+    { key: 'altrex_inactivity_3d', label: 'Inactivity Alert (3 Days)', category: 'Marketing', timing: 'After 3 days of no visits' },
+    { key: 'altrex_inactivity_7d', label: 'Inactivity Alert (7 Days)', category: 'Marketing', timing: 'After 7 days of no visits' },
+    { key: 'altrex_welcome', label: 'Welcome Message', category: 'Utility', timing: 'On new registration' },
+    { key: 'payment_receipt', label: 'Payment Receipts', category: 'Utility', timing: 'On payment record' },
+    { key: 'altrex_pt_assigned', label: 'PT Assigned Alert', category: 'Utility', timing: 'On PT assignment' },
+    { key: 'altrex_pt_feedback', label: 'PT Session Feedback', category: 'Utility', timing: 'After PT check-in' },
+    { key: 'altrex_owner_daily_summary', label: 'Owner Daily Summary', category: 'Utility', timing: '9:30 PM Daily' },
+    { key: 'altrex_birthday', label: 'Birthday Greeting', category: 'Marketing', timing: 'On member birthday' },
   ] as const
 
   return (
@@ -109,7 +114,8 @@ export default function WhatsAppPage() {
               <Zap className="w-4 h-4 text-gold-500" />
               <h2 className="font-semibold text-white">Active Rules</h2>
             </div>
-            <div className="divide-y divide-dark-600/50">
+            {/* 🌟 FIX: Added height and scroll behavior here to handle the longer list */}
+            <div className="divide-y divide-dark-600/50 h-[600px] overflow-y-auto no-scrollbar">
               {loading ? (
                 <div className="p-8 flex justify-center"><Loader2 className="w-6 h-6 text-gold-500 animate-spin" /></div>
               ) : (
@@ -135,7 +141,7 @@ export default function WhatsAppPage() {
 
         {/* Right Column: Message Logs */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden shadow-sm flex flex-col h-full">
+          <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden shadow-sm flex flex-col h-[650px]">
             <div className="p-4 border-b border-dark-600 bg-dark-900/50 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-gold-500" />
@@ -146,7 +152,7 @@ export default function WhatsAppPage() {
               </span>
             </div>
             
-            <div className="flex-1">
+            <div className="flex-1 overflow-hidden">
               <WALog />
             </div>
           </div>

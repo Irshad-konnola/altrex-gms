@@ -1,9 +1,10 @@
-/* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars, react-hooks/incompatible-library */
+
+/* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars */
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { useForm,useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { User, Dumbbell, CreditCard, CheckCircle2, ArrowRight, ArrowLeft, Loader2, Upload, Activity } from "lucide-react"
@@ -22,16 +23,16 @@ import {
 } from "@/components/ui/form"
 import { createMemberAction } from "@/app/(dashboard)/members/actions"
 
-// Mock Plans (Will be fetched from DB later)
-const MOCK_PLANS = [
-  { id: "11111111-1111-1111-1111-111111111111", name: "1-Month Basic", price: 1500, duration: 30 },
-  { id: "22222222-2222-2222-2222-222222222222", name: "3-Month Premium", price: 4000, duration: 90 },
-  { id: "33333333-3333-3333-3333-333333333333", name: "Annual Pass", price: 12000, duration: 365 },
-]
+// Database Plan Type
+type MembershipPlan = {
+  id: string
+  name: string
+  price: number
+  duration_days: number
+}
 
-// 1. Zod Validation Schema
+// Zod Validation Schema
 const memberSchema = z.object({
-  // Step 1: Personal
   fullName: z.string().min(2, "Full name is required"),
   phone: z.string().min(10, "Valid phone number required"),
   email: z.string().email("Invalid email").optional().or(z.literal("")),
@@ -43,11 +44,9 @@ const memberSchema = z.object({
   height: z.string().optional(),
   weight: z.string().optional(),
   
-  // Step 2: Plan
   planId: z.string().min(1, "Please select a plan"),
   startDate: z.string().min(1, "Start date is required"),
   
-  // Step 3: Payment
   paymentMethod: z.string().min(1, "Select a payment method"),
   amount: z.string().min(1, "Amount is required"),
   reference: z.string().optional(),
@@ -66,6 +65,13 @@ export function AddMemberForm() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Real dynamic plans from DB
+  const [plans, setPlans] = useState<MembershipPlan[]>([])
+  console.log(plans,"plansss");
+  
+  const [isLoadingPlans, setIsLoadingPlans] = useState(true)
+
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   
@@ -81,20 +87,32 @@ export function AddMemberForm() {
     },
   })
 
-  // Watch height and weight to auto-calculate BMI
-  const heightVal = form.watch("height")
-  const weightVal = form.watch("weight")
-  
+  // Fetch real plans on mount
+  useEffect(() => {
+    async function fetchPlans() {
+      const { data, error } = await supabase
+        .from('membership_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('price', { ascending: true })
+      
+      if (data) setPlans(data)
+      setIsLoadingPlans(false)
+    }
+    fetchPlans()
+  }, [supabase])
+
+ const heightVal = useWatch({ control: form.control, name: "height" })
+  const weightVal = useWatch({ control: form.control, name: "weight" })
   let calculatedBmi = "0.00"
   if (heightVal && weightVal) {
-    const h = parseFloat(heightVal) / 100 // convert cm to meters
+    const h = parseFloat(heightVal) / 100 
     const w = parseFloat(weightVal)
     if (h > 0 && w > 0) {
       calculatedBmi = (w / (h * h)).toFixed(2)
     }
   }
 
-  // Handle Image Selection
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
@@ -103,15 +121,14 @@ export function AddMemberForm() {
     }
   }
 
-  // Handle Plan Selection to auto-fill amount
   const handlePlanSelect = (planId: string, price: number) => {
     form.setValue("planId", planId)
     form.setValue("amount", price.toString())
     form.clearErrors("planId")
   }
 
-  // Next Step with Validation
-  const handleNext = async () => {
+  const handleNext = async (e: React.MouseEvent) => {
+    e.preventDefault() // Stop any accidental form submission
     let fieldsToValidate: (keyof FormValues)[] = []
     if (step === 1) fieldsToValidate = ["fullName", "phone", "email"]
     if (step === 2) fieldsToValidate = ["planId", "startDate"]
@@ -120,42 +137,39 @@ export function AddMemberForm() {
     if (isValid) setStep(step + 1)
   }
 
-  // Final Submit
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true)
     
     try {
       let photoUrl = ""
 
-      // 1. Handle the Supabase Image Upload First
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop()
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-        
+const fileName = `${crypto.randomUUID()}.${fileExt}`        
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('member_photos')
           .upload(fileName, imageFile)
 
         if (uploadError) {
-          toast.error("Failed to upload photo. Proceeding without it.")
-          console.error(uploadError)
+          toast.error("Failed to upload photo.")
         } else if (uploadData) {
           const { data: publicUrlData } = supabase.storage
             .from('member_photos')
             .getPublicUrl(uploadData.path)
-            
           photoUrl = publicUrlData.publicUrl
         }
       }
 
-      // 2. Attach our calculated variables to the form payload
+      // 🚨 MAPPED VALUES: Ensuring DB column names match perfectly so nothing gets dropped
       const finalValues = {
         ...values,
+        date_of_birth: values.dob || null,           // Maps strictly to DB
+        health_notes: values.healthNotes || null,    // Maps strictly to DB
+        emergency_contact: values.emergencyContact || null, // Maps strictly to DB
         photoUrl: photoUrl || undefined,
         bmi: calculatedBmi !== "0.00" ? calculatedBmi : undefined,
       }
 
-      // 3. Send to Server Action
       const result = await createMemberAction(finalValues)
       
       if (result.success) {
@@ -171,10 +185,10 @@ export function AddMemberForm() {
     }
   }
 
+const selectedPlanId = useWatch({ control: form.control, name: "planId" })
   return (
     <div className="bg-dark-950 border border-dark-800 rounded-2xl p-4 sm:p-8 shadow-xl">
       
-      {/* Step Indicator */}
       <div className="flex items-center justify-between sm:justify-start sm:gap-8 mb-8 sm:mb-12 relative">
         <div className="hidden sm:block absolute top-1/2 left-0 w-full h-0.5 bg-dark-800 -z-10 -translate-y-1/2" />
         {STEPS.map((s) => {
@@ -203,12 +217,12 @@ export function AddMemberForm() {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Added onKeyDown to prevent 'Enter' from skipping steps */}
+        <form onSubmit={form.handleSubmit(onSubmit)} onKeyDown={(e) => { if (e.key === 'Enter' && step < 3) e.preventDefault() }} className="space-y-8">
           
           {/* STEP 1: PERSONAL INFO */}
           <div className={cn("space-y-6 animate-in fade-in slide-in-from-right-4 duration-500", step !== 1 && "hidden")}>
             
-            {/* NEW: Photo Upload UI */}
             <label htmlFor="photo-upload" className="flex items-center justify-center w-full sm:w-32 h-32 rounded-2xl bg-dark-900 border border-dark-700 border-dashed text-dark-400 hover:text-gold-500 hover:border-gold-500/50 transition-colors cursor-pointer mb-6 mx-auto sm:mx-0 overflow-hidden relative">
               {imagePreview ? (
                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
@@ -266,8 +280,15 @@ export function AddMemberForm() {
                   <FormControl><Input placeholder="Relative's phone number" className="h-12 bg-dark-900 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
                 </FormItem>
               )} />
-
-              {/* NEW: BMI Section */}
+              <div className="md:col-span-2">
+                <FormField control={form.control} name="address" render={({ field }) => (
+                  <FormItem><FormLabel className="text-dark-200">Full Address</FormLabel>
+                    <FormControl>
+                      <textarea placeholder="Enter complete address..." className="flex min-h-[80px] w-full rounded-xl border border-dark-700 bg-dark-900 px-3 py-2 text-sm text-white placeholder:text-dark-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/50" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )} />
+              </div>
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 p-5 bg-dark-900/50 border border-dark-800 rounded-xl">
                 <FormField control={form.control} name="height" render={({ field }) => (
                   <FormItem><FormLabel className="text-dark-200">Height (cm)</FormLabel>
@@ -301,13 +322,17 @@ export function AddMemberForm() {
 
           {/* STEP 2: MEMBERSHIP PLAN */}
           <div className={cn("space-y-6 animate-in fade-in slide-in-from-right-4 duration-500", step !== 2 && "hidden")}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(() => {
-                // 1. Extract the watch call outside the map loop to satisfy React Compiler
-                const selectedPlanId = form.watch("planId")
-                
-                // 2. Return the mapped array
-                return MOCK_PLANS.map((plan) => {
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {isLoadingPlans ? (
+                <div className="col-span-3 py-12 flex justify-center">
+                  <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
+                </div>
+              ) : plans.length === 0 ? (
+                <div className="col-span-3 py-12 text-center text-dark-400">
+                  No active plans found in the database.
+                </div>
+              ) : (
+                plans.map((plan) => {
                   const isSelected = selectedPlanId === plan.id
                   
                   return (
@@ -324,11 +349,11 @@ export function AddMemberForm() {
                       {isSelected && <div className="absolute top-0 right-0 p-1.5 bg-gold-500 rounded-bl-xl"><CheckCircle2 className="w-4 h-4 text-dark-950" /></div>}
                       <h3 className="text-lg font-bold text-white mb-2">{plan.name}</h3>
                       <div className="text-3xl font-black text-gold-500 mb-4">₹{plan.price}</div>
-                      <p className="text-sm text-dark-300 font-medium">Valid for {plan.duration} days</p>
+                      <p className="text-sm text-dark-300 font-medium">Valid for {plan.duration_days} days</p>
                     </div>
                   )
                 })
-              })()} 
+              )} 
             </div>
             {form.formState.errors.planId && <p className="text-red-400 text-sm font-medium">{form.formState.errors.planId.message}</p>}
 
@@ -344,7 +369,6 @@ export function AddMemberForm() {
 
           {/* STEP 3: PAYMENT */}
           <div className={cn("space-y-6 animate-in fade-in slide-in-from-right-4 duration-500", step !== 3 && "hidden")}>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField control={form.control} name="paymentMethod" render={({ field }) => (
                 <FormItem><FormLabel className="text-dark-200">Payment Method</FormLabel>
@@ -353,7 +377,7 @@ export function AddMemberForm() {
                       <option value="upi">UPI (GPay, PhonePe)</option>
                       <option value="cash">Cash</option>
                       <option value="card">Card / POS</option>
-                      <option value="razorpay">Generate Razorpay Link</option>
+                      {/* <option value="razorpay">Generate Razorpay Link</option> */}
                     </select>
                   </FormControl>
                   <FormMessage className="text-red-400" />
@@ -411,7 +435,7 @@ export function AddMemberForm() {
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="bg-linear-to-r from-gold-400 to-gold-600 hover:from-gold-300 hover:to-gold-500 text-dark-950 font-bold rounded-xl px-8 shadow-[0_0_20px_rgba(234,179,8,0.3)] border border-gold-300/50"
+                className="bg-gradient-to-r from-gold-400 to-gold-600 hover:from-gold-300 hover:to-gold-500 text-dark-950 font-bold rounded-xl px-8 shadow-[0_0_20px_rgba(234,179,8,0.3)] border border-gold-300/50"
               >
                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Complete Registration"}
               </Button>

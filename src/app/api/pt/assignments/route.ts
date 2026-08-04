@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { addDays, format } from 'date-fns'
+import { sendTemplateMessage } from '@/lib/whatsapp/client'
 
 export async function POST(request: Request) {
   try {
@@ -24,6 +25,15 @@ export async function POST(request: Request) {
       .single()
 
     if (pkgError || !pkg) throw new Error("Package not found")
+
+    // 🌟 NEW: Fetch member details for the WhatsApp message
+    const { data: member, error: memberError } = await db
+      .from('members')
+      .select('full_name, phone')
+      .eq('id', member_id)
+      .single()
+      
+    if (memberError || !member) throw new Error("Member not found")
 
     // 2. Calculate end date
     const endDate = format(addDays(new Date(start_date), pkg.validity_days), 'yyyy-MM-dd')
@@ -49,6 +59,29 @@ export async function POST(request: Request) {
 
     // 4. Update the member to flag them as a PT member
     await db.from('members').update({ is_pt_member: true }).eq('id', member_id)
+
+    // 5. 🌟 WHATSAPP TRIGGER: PT Assigned
+    if (member.phone) {
+      try {
+        await sendTemplateMessage({
+          to: member.phone,
+          templateName: "altrex_pt_assigned",
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: member.full_name }, 
+                { type: "text", text: trainer_name },    
+                { type: "text", text: pkg.total_sessions.toString() }, 
+              ],
+            },
+          ],
+        });
+        console.log(`✅ WhatsApp PT Assignment sent to ${member.phone}`);
+      } catch (waError) {
+        console.error("⚠️ WhatsApp PT Assignment Failed:", waError);
+      }
+    }
 
     return NextResponse.json(assignment)
   } catch (error: unknown) {

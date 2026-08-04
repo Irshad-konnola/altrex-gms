@@ -4,7 +4,7 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { Dumbbell, ShieldCheck, Zap, Loader2 } from "lucide-react"
+import { Dumbbell, ShieldCheck, Zap, Loader2, Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
 
 import { createClient } from "@/lib/supabase/client"
@@ -28,6 +28,7 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const supabase = createClient()
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [role, setRole] = useState<"owner" | "front_desk">("owner")
 
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -55,8 +56,6 @@ export default function LoginPage() {
       toast.success("Login successful!")
     }
 
-   // Use window.location to force a hard reload. 
-    // This absolutely guarantees cookies are synced with Server Components.
     if (userRole === "owner") {
       window.location.assign("/dashboard")
     } else {
@@ -76,7 +75,7 @@ export default function LoginPage() {
         
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-16">
-            <div className="bg-gradient-to-b from-gold-300 to-gold-500 p-2.5 rounded-xl shadow-lg shadow-gold-500/20">
+            <div className="bg-gradient-to-br from-gold-300 via-gold-500 to-gold-700 p-2.5 rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.3)]">
               <Dumbbell className="w-6 h-6 text-dark-950" strokeWidth={2.5} />
             </div>
             <span className="text-2xl font-bold tracking-tight text-white">Altrex GMS</span>
@@ -84,8 +83,8 @@ export default function LoginPage() {
           
           <h1 className="text-5xl font-bold leading-tight mb-6 tracking-tight">
             Manage your gym with <br />
-            {/* Native Tailwind Text Gradient */}
-            <span className="bg-gradient-to-br from-gold-300 via-gold-500 to-gold-600 bg-clip-text text-transparent drop-shadow-sm">
+            {/* Enhanced Metallic Text Gradient */}
+            <span className="bg-gradient-to-r from-gold-300 via-gold-400 to-gold-600 bg-clip-text text-transparent drop-shadow-sm">
               absolute precision.
             </span>
           </h1>
@@ -149,10 +148,10 @@ export default function LoginPage() {
                 Front Desk
               </button>
               
-              {/* Sliding Gold Pill with Native Tailwind Gradients */}
+              {/* Sliding Gold Pill with richer gradient */}
               <div 
                 className={cn(
-                  "absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-gradient-to-b from-gold-400 to-gold-500 shadow-[0_0_15px_rgba(234,179,8,0.3)] border border-gold-300/50 rounded-xl transition-transform duration-300 ease-out",
+                  "absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-gradient-to-r from-gold-400 to-gold-600 shadow-[0_0_15px_rgba(234,179,8,0.4)] border border-gold-300/50 rounded-xl transition-transform duration-300 ease-out",
                   role === "owner" ? "translate-x-0" : "translate-x-[calc(100%+0px)]"
                 )} 
               />
@@ -185,23 +184,32 @@ export default function LoginPage() {
                     <FormItem>
                       <FormLabel className="text-dark-200 font-medium ml-1">Password</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••" 
-                          className="h-12 bg-dark-950 border-dark-800 text-white focus-visible:ring-gold-500/50 focus-visible:border-gold-500 placeholder:text-dark-600 rounded-xl px-4 text-base transition-all" 
-                          {...field} 
-                        />
+                        <div className="relative">
+                          <Input 
+                            type={showPassword ? "text" : "password"} 
+                            placeholder="••••••••" 
+                            className="h-12 bg-dark-950 border-dark-800 text-white focus-visible:ring-gold-500/50 focus-visible:border-gold-500 placeholder:text-dark-600 rounded-xl px-4 pr-12 text-base transition-all" 
+                            {...field} 
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-dark-400 hover:text-gold-500 transition-colors"
+                          >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage className="text-red-400 ml-1" />
                     </FormItem>
                   )}
                 />
 
-                {/* Submit Button with Native Tailwind Gradients */}
+                {/* Submit Button with Richer Gradient */}
                 <Button 
                   type="submit" 
                   disabled={isLoading}
-                  className="w-full h-12 mt-4 bg-gradient-to-b from-gold-400 to-gold-600 hover:from-gold-300 hover:to-gold-500 text-dark-950 shadow-[0_0_20px_rgba(234,179,8,0.25)] border border-gold-300/50 font-bold text-base rounded-xl transition-all duration-300"
+                  className="w-full h-12 mt-4 bg-gradient-to-r from-gold-400 via-gold-500 to-gold-600 hover:from-gold-500 hover:to-gold-600 text-dark-950 shadow-[0_0_20px_rgba(234,179,8,0.3)] border border-gold-300/50 font-bold text-base rounded-xl transition-all duration-300"
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />

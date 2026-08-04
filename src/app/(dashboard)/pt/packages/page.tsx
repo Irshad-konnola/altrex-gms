@@ -40,17 +40,19 @@ export default function PTPackagesPage() {
         const data = await res.json()
         setPackages(data)
       }
-    } catch (error) {
+    } catch  {
       toast.error("Failed to load packages")
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    fetchPackages()
-  }, [])
-
+useEffect(() => {
+    const loadData = async () => {
+      await fetchPackages(); 
+    }
+    loadData();
+  }, []);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -68,7 +70,7 @@ export default function PTPackagesPage() {
       setIsOpen(false)
       setFormData({ name: "", total_sessions: "", price: "", validity_days: "", description: "" })
       fetchPackages() // Refresh the list
-    } catch (error) {
+    } catch  {
       toast.error("Error creating package")
     } finally {
       setIsSubmitting(false)

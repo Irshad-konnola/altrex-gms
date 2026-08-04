@@ -13,6 +13,8 @@ import { useState } from "react"
 
 export function OverdueDuesPanel() {
   const { data: overdueMembers, isLoading } = useOverdueMembers()
+  console.log(overdueMembers,"overdue member details");
+  
   const { generateRazorpayLink } = usePaymentMutations()
   const [loadingId, setLoadingId] = useState<string | null>(null)
 

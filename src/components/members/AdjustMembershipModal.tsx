@@ -4,6 +4,7 @@ import { useState } from "react"
 import { CalendarClock, Loader2, ArrowRight } from "lucide-react"
 import { addDays, format, parseISO } from "date-fns"
 import { toast } from "sonner"
+import { extendMembershipAction } from "@/app/(dashboard)/members/actions"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,9 +30,11 @@ export function AdjustMembershipModal({ memberId, currentEndDate }: AdjustMember
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Calculate new date dynamically as the admin types
+  // Fallback to today's date if currentEndDate is "N/A" or invalid
+  const safeCurrentDate = currentEndDate && currentEndDate !== "N/A" ? currentEndDate : format(new Date(), "yyyy-MM-dd")
   const newEndDate = daysToAdd 
-    ? format(addDays(parseISO(currentEndDate), Number(daysToAdd)), "yyyy-MM-dd")
-    : currentEndDate
+    ? format(addDays(parseISO(safeCurrentDate), Number(daysToAdd)), "yyyy-MM-dd")
+    : safeCurrentDate
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,22 +42,25 @@ export function AdjustMembershipModal({ memberId, currentEndDate }: AdjustMember
 
     setIsSubmitting(true)
     
-    // TODO: Supabase Update Logic
-    console.log("Extending membership:", { memberId, daysToAdd, reason, newEndDate })
-    
-    // Fake API delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    toast.success(`Membership extended by ${daysToAdd} days!`)
-    setIsSubmitting(false)
-    setIsOpen(false)
-    setDaysToAdd("")
-    setReason("")
+    try {
+      const result = await extendMembershipAction(memberId, Number(daysToAdd))
+      if (result.success) {
+        toast.success(`Membership extended by ${daysToAdd} days!`)
+        setIsOpen(false)
+        setDaysToAdd("")
+        setReason("")
+      } else {
+        toast.error(`Error: ${result.error}`)
+      }
+    } catch  {
+      toast.error("Failed to extend membership")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      {/* FIXED: Removed asChild and nested <Button>. Applied styles directly to DialogTrigger. */}
       <DialogTrigger className="inline-flex items-center justify-center h-10 px-4 py-2 text-sm font-medium border border-dark-700 text-white hover:bg-dark-800 hover:text-gold-500 w-full sm:w-auto rounded-xl transition-colors">
         <CalendarClock className="w-4 h-4 mr-2" />
         Extend Plan
@@ -64,16 +70,15 @@ export function AdjustMembershipModal({ memberId, currentEndDate }: AdjustMember
         <DialogHeader>
           <DialogTitle className="text-xl font-bold tracking-tight">Adjust Membership</DialogTitle>
           <DialogDescription className="text-dark-400">
-Extend this member&apos;s plan due to vacation, medical reasons, or gym closure.          </DialogDescription>
+            Extend this member&apos;s plan due to vacation, medical reasons, or gym closure.          
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-          
-          {/* Status Display */}
           <div className="bg-dark-900 border border-dark-800 rounded-xl p-4 flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-1">Current Expiry</span>
-              <span className="font-semibold text-white">{currentEndDate}</span>
+              <span className="font-semibold text-white">{safeCurrentDate}</span>
             </div>
             <ArrowRight className="w-5 h-5 text-dark-500" />
             <div className="flex flex-col text-right">

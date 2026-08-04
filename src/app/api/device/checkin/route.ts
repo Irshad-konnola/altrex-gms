@@ -1,5 +1,4 @@
 // src/app/api/device/checkin/route.ts
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { parseESSLPayload } from '@/lib/essl/parser'
 

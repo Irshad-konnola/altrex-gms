@@ -11,6 +11,7 @@ type ReportData = {
     total_expiring: number
     total_expired: number
     active_pt: number
+    monthly_revenue: number // 🌟 ADDED: Dynamic revenue field
   },
   charts: {
     status: { name: string, value: number, fill: string }[]
@@ -57,7 +58,7 @@ export default function ReportsPage() {
           <TrendingUp className="w-6 h-6 text-gold-500" />
           Analytics & Reports
         </h1>
-        <p className="text-dark-300 text-sm mt-1">Track your gym's performance, member retention, and revenue.</p>
+        <p className="text-dark-300 text-sm mt-1">Track your gym&apos;s performance, member retention, and revenue.</p>
       </div>
 
       {/* KPI Cards */}
@@ -91,7 +92,10 @@ export default function ReportsPage() {
             <h3 className="text-dark-300 text-sm font-medium">Estimated Monthly Revenue</h3>
             <div className="p-2 bg-blue-500/10 rounded-lg"><TrendingUp className="w-4 h-4 text-blue-500" /></div>
           </div>
-          <p className="text-3xl font-bold text-white">₹82,000</p>
+          {/* 🌟 UPDATED: Dynamic revenue with comma formatting */}
+          <p className="text-3xl font-bold text-white">
+            ₹{data.summary.monthly_revenue?.toLocaleString() || 0}
+          </p>
         </div>
       </div>
 

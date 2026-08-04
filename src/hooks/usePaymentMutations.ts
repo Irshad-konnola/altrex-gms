@@ -118,11 +118,11 @@ export function usePaymentMutations() {
   });
 
   const generateRazorpayLink = useMutation({
-    mutationFn: async ({ memberId, memberName, memberPhone, amount, planName, planId }: { memberId: string, memberName?: string, memberPhone?: string, amount: number, planName?: string, planId?: string }) => {
+    mutationFn: async ({ memberId, memberName, memberPhone, amount, planName, planId,purpose }: { memberId: string, memberName?: string, memberPhone?: string, amount: number, planName?: string, planId?: string,purpose?: string }) => {
       const response = await fetch('/api/payments/create-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ memberId, memberName, memberPhone, amount, planName, planId }),
+        body: JSON.stringify({ memberId, memberName, memberPhone, amount, planName, planId,purpose }),
       })
 
       const text = await response.text()
