@@ -105,24 +105,29 @@ export function PlanFormModal({ isOpen, onClose, plan, onSubmit, isSubmitting,on
               />
 
               <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-dark-300">Price (₹)</FormLabel>
-                    <FormControl>
-                      {/* FIX: Explicitly convert target value to Number */}
-                      <Input 
-                        type="number" 
-                        className="bg-dark-900 border-dark-600 focus:border-gold-500" 
-                        {...field}
-                        onChange={e => field.onChange(e.target.value ? Number(e.target.value) : 0)}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
+  control={form.control}
+  name="price"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel className="text-dark-300">Price (₹)</FormLabel>
+      <FormControl>
+        <Input 
+          type="number" 
+          className="bg-dark-900 border-dark-600 focus:border-gold-500" 
+          {...field}
+          // If the field value is exactly 0, you can choose to display an empty string or the 0 itself.
+          // Spreading field handles the value automatically, we just need to fix the onChange.
+          onChange={e => {
+            const val = e.target.value;
+            // FIX: Return an empty string if the user clears the input, otherwise return the Number
+            field.onChange(val === "" ? "" : Number(val));
+          }}
+        />
+      </FormControl>
+      <FormMessage className="text-red-400" />
+    </FormItem>
+  )}
+/>
             </div>
 
             <FormField

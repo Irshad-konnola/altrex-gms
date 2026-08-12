@@ -127,11 +127,11 @@ export default function PTDashboardPage() {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-dark-700 flex items-center justify-center overflow-hidden border border-dark-600">
-                          {record.members?.photo_url ? (
-                            <Image src={record.members.photo_url} alt="Profile" fill className="w-full h-full object-cover" />
-                          ) : (
+                          {/* {record.members?.photo_url ? (
+                            <Image src={record.members.photo_url} alt="Profile" fill className="w-4 h-4 object-cover" />
+                          ) : ( */}
                             <User className="w-4 h-4 text-dark-400" />
-                          )}
+                          {/* )} */}
                         </div>
                         <div>
                           <p className="font-medium text-white">{record.members?.full_name}</p>
