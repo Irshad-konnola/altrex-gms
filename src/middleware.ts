@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
   // Rate Limit specific sensitive API routes
   if (request.nextUrl.pathname.startsWith('/api/whatsapp') || request.nextUrl.pathname.startsWith('/api/payments/create-link')) {
     if (apiLimiter) {
-      const ip = request.ip ?? '127.0.0.1'
+      const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1'
       const { success, limit, remaining, reset } = await apiLimiter.limit(ip)
       if (!success) {
         return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, {
