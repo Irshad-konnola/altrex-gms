@@ -62,7 +62,7 @@ export function PlanFormModal({ isOpen, onClose, plan, onSubmit, isSubmitting,on
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white">
+          <DialogTitle className="text-xl font-bold text-foreground">
             {plan ? 'Edit Membership Plan' : 'Create New Plan'}
           </DialogTitle>
         </DialogHeader>
@@ -74,9 +74,9 @@ export function PlanFormModal({ isOpen, onClose, plan, onSubmit, isSubmitting,on
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-dark-300">Plan Name</FormLabel>
+                  <FormLabel className="text-muted-foreground">Plan Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. 3-Month Premium" className="bg-dark-900 border-dark-600 focus:border-gold-500" {...field} />
+                    <Input placeholder="e.g. 3-Month Premium" className="bg-card border-border focus:border-gold-500" {...field} />
                   </FormControl>
                   <FormMessage className="text-red-400" />
                 </FormItem>
@@ -89,12 +89,12 @@ export function PlanFormModal({ isOpen, onClose, plan, onSubmit, isSubmitting,on
                 name="duration_days"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-dark-300">Duration (Days)</FormLabel>
+                    <FormLabel className="text-muted-foreground">Duration (Days)</FormLabel>
                     <FormControl>
                       {/* FIX: Explicitly convert target value to Number */}
                       <Input 
                         type="number" 
-                        className="bg-dark-900 border-dark-600 focus:border-gold-500" 
+                        className="bg-card border-border focus:border-gold-500" 
                         {...field}
                         onChange={e => field.onChange(e.target.value ? Number(e.target.value) : 0)}
                       />
@@ -109,11 +109,11 @@ export function PlanFormModal({ isOpen, onClose, plan, onSubmit, isSubmitting,on
   name="price"
   render={({ field }) => (
     <FormItem>
-      <FormLabel className="text-dark-300">Price (₹)</FormLabel>
+      <FormLabel className="text-muted-foreground">Price (₹)</FormLabel>
       <FormControl>
         <Input 
           type="number" 
-          className="bg-dark-900 border-dark-600 focus:border-gold-500" 
+          className="bg-card border-border focus:border-gold-500" 
           {...field}
           // If the field value is exactly 0, you can choose to display an empty string or the 0 itself.
           // Spreading field handles the value automatically, we just need to fix the onChange.
@@ -135,9 +135,9 @@ export function PlanFormModal({ isOpen, onClose, plan, onSubmit, isSubmitting,on
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-dark-300">Description (Optional)</FormLabel>
+                  <FormLabel className="text-muted-foreground">Description (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Short tagline for the plan" className="bg-dark-900 border-dark-600 focus:border-gold-500" {...field} />
+                    <Input placeholder="Short tagline for the plan" className="bg-card border-border focus:border-gold-500" {...field} />
                   </FormControl>
                   <FormMessage className="text-red-400" />
                 </FormItem>
@@ -149,11 +149,11 @@ export function PlanFormModal({ isOpen, onClose, plan, onSubmit, isSubmitting,on
               name="features"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-dark-300">Features (One per line)</FormLabel>
+                  <FormLabel className="text-muted-foreground">Features (One per line)</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="Gym access&#10;Locker&#10;Diet plan" 
-                      className="bg-dark-900 border-dark-600 focus:border-gold-500 resize-none h-24" 
+                      className="bg-card border-border focus:border-gold-500 resize-none h-24" 
                       {...field} 
                     />
                   </FormControl>
@@ -163,7 +163,7 @@ export function PlanFormModal({ isOpen, onClose, plan, onSubmit, isSubmitting,on
             />
 
 
-            <div className="flex justify-between items-center pt-4 border-t border-dark-600">
+            <div className="flex justify-between items-center pt-4 border-t border-border">
             <div>
                 {plan && onArchive && (
                   <Button 
@@ -183,10 +183,10 @@ export function PlanFormModal({ isOpen, onClose, plan, onSubmit, isSubmitting,on
 
               {/* Right side: Cancel and Save */}
               <div className="flex gap-3">
-                <Button type="button" variant="ghost" onClick={onClose} className="text-dark-300 hover:text-white">
+                <Button type="button" variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-foreground">
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting} className="bg-gold-500 text-dark-900 hover:bg-gold-600 font-semibold">
+                <Button type="submit" disabled={isSubmitting} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
                   {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Plan'}
                 </Button>
               </div>

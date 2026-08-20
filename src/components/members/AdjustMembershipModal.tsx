@@ -61,64 +61,64 @@ export function AdjustMembershipModal({ memberId, currentEndDate }: AdjustMember
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger className="inline-flex items-center justify-center h-10 px-4 py-2 text-sm font-medium border border-dark-700 text-white hover:bg-dark-800 hover:text-gold-500 w-full sm:w-auto rounded-xl transition-colors">
+      <DialogTrigger className="inline-flex items-center justify-center h-10 px-4 py-2 text-sm font-medium border border-border text-foreground hover:bg-muted hover:text-gold-500 w-full sm:w-auto rounded-xl transition-colors">
         <CalendarClock className="w-4 h-4 mr-2" />
         Extend Plan
       </DialogTrigger>
       
-      <DialogContent className="bg-dark-950 border border-dark-800 text-white sm:max-w-[425px] rounded-2xl">
+      <DialogContent className="bg-background border border-border text-foreground sm:max-w-[425px] rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold tracking-tight">Adjust Membership</DialogTitle>
-          <DialogDescription className="text-dark-400">
+          <DialogDescription className="text-muted-foreground">
             Extend this member&apos;s plan due to vacation, medical reasons, or gym closure.          
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-          <div className="bg-dark-900 border border-dark-800 rounded-xl p-4 flex items-center justify-between">
+          <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-1">Current Expiry</span>
-              <span className="font-semibold text-white">{safeCurrentDate}</span>
+              <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Current Expiry</span>
+              <span className="font-semibold text-foreground">{safeCurrentDate}</span>
             </div>
-            <ArrowRight className="w-5 h-5 text-dark-500" />
+            <ArrowRight className="w-5 h-5 text-foreground0" />
             <div className="flex flex-col text-right">
-              <span className="text-xs text-dark-400 uppercase tracking-wider font-medium mb-1">New Expiry</span>
+              <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1">New Expiry</span>
               <span className="font-bold text-gold-500">{newEndDate}</span>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-dark-200">Days to Add</label>
+              <label className="text-sm font-medium text-foreground">Days to Add</label>
               <Input 
                 type="number" 
                 min="1"
                 placeholder="e.g. 20" 
                 value={daysToAdd}
                 onChange={(e) => setDaysToAdd(e.target.value ? parseInt(e.target.value) : "")}
-                className="bg-dark-900 border-dark-700 text-white rounded-xl h-11"
+                className="bg-card border-border text-foreground rounded-xl h-11"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-dark-200">Reason (Optional)</label>
+              <label className="text-sm font-medium text-foreground">Reason (Optional)</label>
               <Input 
                 type="text" 
                 placeholder="e.g. Medical leave, Vacation" 
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="bg-dark-900 border-dark-700 text-white rounded-xl h-11"
+                className="bg-card border-border text-foreground rounded-xl h-11"
               />
             </div>
           </div>
 
-          <DialogFooter className="pt-4 border-t border-dark-800">
+          <DialogFooter className="pt-4 border-t border-border">
             <Button 
               type="button" 
               variant="ghost" 
               onClick={() => setIsOpen(false)}
-              className="text-dark-300 hover:text-white rounded-xl"
+              className="text-muted-foreground hover:text-foreground rounded-xl"
               disabled={isSubmitting}
             >
               Cancel

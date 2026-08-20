@@ -17,7 +17,7 @@ export async function GET() {
 
     const { data, error } = await supabaseAdmin
       .from('attendance_logs')
-      .select('check_in_at')
+      .select('member_id, check_in_at')
       .gte('check_in_at', start)
       .lte('check_in_at', end)
 
@@ -26,11 +26,23 @@ export async function GET() {
     // Create an array of 24 hours filled with 0
     const hourlyCounts = Array(24).fill(0)
     
+    // Track unique members per hour
+    const uniqueMembersPerHour: Record<number, Set<string>> = {}
+    for (let i = 0; i < 24; i++) uniqueMembersPerHour[i] = new Set()
+
+    // Track total unique members
+    const uniqueMembers = new Set<string>()
+
     // Increment the count for the specific hour a check-in occurred
     data.forEach((log) => {
       const hour = new Date(log.check_in_at).getHours()
-      hourlyCounts[hour]++
+      uniqueMembersPerHour[hour].add(log.member_id)
+      uniqueMembers.add(log.member_id)
     })
+    
+    for (let i = 0; i < 24; i++) {
+      hourlyCounts[i] = uniqueMembersPerHour[i].size
+    }
 
     // Format for Recharts
     const chartData = hourlyCounts.map((count, i) => {
@@ -41,7 +53,7 @@ export async function GET() {
     // Filter to typical gym hours (5 AM to 11 PM) to make the chart look cleaner
     const gymHoursData = chartData.filter(d => d.rawHour >= 5 && d.rawHour <= 23)
 
-    const totalFootfall = data.length
+    const totalFootfall = uniqueMembers.size
     
     // Find the hour with the highest check-ins
     const peakHourData = [...gymHoursData].sort((a, b) => b.checkIns - a.checkIns)[0]

@@ -29,6 +29,8 @@ export default function PTDashboardPage() {
   const [ptMembers, setPtMembers] = useState<ActivePTMember[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [page, setPage] = useState(1)
+  const pageSize = 15
 
   useEffect(() => {
     const fetchActivePT = async () => {
@@ -51,6 +53,7 @@ export default function PTDashboardPage() {
     record.members?.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     record.trainer_name.toLowerCase().includes(searchTerm.toLowerCase())
   )
+  const paginatedMembers = filteredMembers.slice((page - 1) * pageSize, page * pageSize)
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-8">
@@ -58,15 +61,15 @@ export default function PTDashboardPage() {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Users className="w-6 h-6 text-gold-500" />
             Personal Training
           </h1>
-          <p className="text-dark-300 text-sm mt-1">Manage active PT clients and trainer assignments.</p>
+          <p className="text-muted-foreground text-sm mt-1">Manage active PT clients and trainer assignments.</p>
         </div>
         
         <Link href="/pt/packages">
-          <Button className="bg-dark-800 text-white hover:bg-dark-700 border border-dark-600 font-semibold gap-2">
+          <Button className="bg-muted text-foreground hover:bg-card border border-border font-semibold gap-2">
             <Settings className="w-4 h-4 text-gold-500" />
             Manage Packages
           </Button>
@@ -74,29 +77,29 @@ export default function PTDashboardPage() {
       </div>
 
       {/* Main Dashboard UI */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-muted border border-border rounded-xl overflow-hidden shadow-sm">
         
         {/* Toolbar */}
-        <div className="p-4 border-b border-dark-600 bg-dark-900/50 flex flex-col sm:flex-row justify-between gap-4">
+        <div className="p-4 border-b border-border bg-card/50 flex flex-col sm:flex-row justify-between gap-4">
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
               placeholder="Search member or trainer..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-dark-950 border-dark-700 focus:border-gold-500 text-white w-full"
+              className="pl-9 bg-background border-border focus:border-gold-500 text-foreground w-full"
             />
           </div>
-          <div className="flex items-center gap-2 text-sm text-dark-300 font-medium bg-dark-950 px-4 py-2 rounded-lg border border-dark-700">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium bg-background px-4 py-2 rounded-lg border border-border">
             <Dumbbell className="w-4 h-4 text-gold-500" />
-            Total Active PT: <span className="text-white">{ptMembers.length}</span>
+            Total Active PT: <span className="text-foreground">{ptMembers.length}</span>
           </div>
         </div>
 
         {/* Data Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-dark-900/80 text-dark-300 uppercase tracking-wider font-medium text-xs border-b border-dark-600">
+            <thead className="bg-card/80 text-muted-foreground uppercase tracking-wider font-medium text-xs border-b border-border">
               <tr>
                 <th className="p-4">Member</th>
                 <th className="p-4">Package</th>
@@ -108,7 +111,7 @@ export default function PTDashboardPage() {
             <tbody className="divide-y divide-dark-600/50">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-dark-400 animate-pulse">
+                  <td colSpan={5} className="p-8 text-center text-muted-foreground animate-pulse">
                     Loading PT data...
                   </td>
                 </tr>
@@ -116,33 +119,29 @@ export default function PTDashboardPage() {
                 <tr>
                   <td colSpan={5} className="p-12 text-center">
                     <Dumbbell className="w-10 h-10 text-dark-600 mx-auto mb-3" />
-                    <h3 className="text-white font-medium mb-1">No Active Clients found</h3>
-                    <p className="text-dark-400 text-sm">Assign packages to members via their profile.</p>
+                    <h3 className="text-foreground font-medium mb-1">No Active Clients found</h3>
+                    <p className="text-muted-foreground text-sm">Assign packages to members via their profile.</p>
                   </td>
                 </tr>
               ) : (
-                filteredMembers.map((record) => (
-                  <tr key={record.id} className="hover:bg-dark-700/30 transition-colors">
+                paginatedMembers.map((record) => (
+                  <tr key={record.id} className="hover:bg-card/30 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-dark-700 flex items-center justify-center overflow-hidden border border-dark-600">
-                          {/* {record.members?.photo_url ? (
-                            <Image src={record.members.photo_url} alt="Profile" fill className="w-4 h-4 object-cover" />
-                          ) : ( */}
-                            <User className="w-4 h-4 text-dark-400" />
-                          {/* )} */}
+                        <div className="w-8 h-8 rounded-full bg-card flex items-center justify-center overflow-hidden border border-border">
+                          <User className="w-4 h-4 text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="font-medium text-white">{record.members?.full_name}</p>
-                          <p className="text-xs text-dark-400">{record.members?.phone}</p>
+                          <p className="font-medium text-foreground">{record.members?.full_name}</p>
+                          <p className="text-xs text-muted-foreground">{record.members?.phone}</p>
                         </div>
                       </div>
                     </td>
                     <td className="p-4">
-                      <span className="font-medium text-dark-200">{record.pt_packages?.name || 'Custom'}</span>
+                      <span className="font-medium text-foreground">{record.pt_packages?.name || 'Custom'}</span>
                     </td>
                     <td className="p-4">
-                      <span className="bg-dark-900 border border-dark-700 px-2 py-1 rounded text-dark-200 font-medium">
+                      <span className="bg-card border border-border px-2 py-1 rounded text-foreground font-medium">
                         {record.trainer_name}
                       </span>
                     </td>
@@ -154,13 +153,13 @@ export default function PTDashboardPage() {
                         <span className={`font-bold text-lg ${record.sessions_remaining <= 3 ? 'text-red-400' : 'text-gold-500'}`}>
                           {record.sessions_remaining}
                         </span>
-                        <span className="text-xs text-dark-400 mt-1">/ {record.sessions_total}</span>
+                        <span className="text-xs text-muted-foreground mt-1">/ {record.sessions_total}</span>
                       </div>
                     </td>
                     <td className="p-4 text-right">
                       <Link href={`/members/${record.members?.id}`}>
-                        <Button size="sm" className="bg-dark-700 hover:bg-gold-500 hover:text-dark-900 text-white border border-dark-600">
-                          View Profile
+                        <Button variant="outline" size="sm" className="font-medium hover:bg-gold-500 hover:text-dark-900 border-border">
+                          View Member
                         </Button>
                       </Link>
                     </td>
@@ -170,6 +169,18 @@ export default function PTDashboardPage() {
             </tbody>
           </table>
         </div>
+        
+        {filteredMembers.length > pageSize && (
+          <div className="flex items-center justify-between px-4 py-4 border-t border-border mt-2 bg-background rounded-b-xl">
+            <div className="text-sm text-muted-foreground">
+              Page <span className="font-medium text-foreground">{page}</span> of <span className="font-medium text-foreground">{Math.ceil(filteredMembers.length / pageSize)}</span>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
+              <Button variant="outline" size="sm" disabled={page >= Math.ceil(filteredMembers.length / pageSize)} onClick={() => setPage(page + 1)}>Next</Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

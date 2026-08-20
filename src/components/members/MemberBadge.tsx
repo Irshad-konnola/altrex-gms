@@ -5,11 +5,11 @@ export function MemberBadge({ status }: { status: string }) {
     active: "bg-green-500/20 text-green-400 border border-green-500/30",
     expiring: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
     expired: "bg-red-500/20 text-red-400 border border-red-500/30",
-    inactive: "bg-dark-600/50 text-dark-300 border border-dark-500/30",
-    archived: "bg-dark-800 text-dark-400 border border-dark-700",
+    inactive: "bg-muted/50 text-muted-foreground border border-border/30",
+    archived: "bg-muted text-muted-foreground border border-border",
   }
 
-  const defaultStyle = "bg-dark-600/50 text-dark-300 border border-dark-500/30"
+  const defaultStyle = "bg-muted/50 text-muted-foreground border border-border/30"
   const appliedStyle = styles[status.toLowerCase() as keyof typeof styles] || defaultStyle
 
   return (

@@ -60,10 +60,10 @@ export function RazorpayLinkModal({ isOpen, onClose, paymentUrl, memberPhone, me
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-dark-800 border-dark-600 sm:max-w-md text-center">
+      <DialogContent className="bg-muted border-border sm:max-w-md text-center">
         <DialogHeader>
-          <DialogTitle className="text-white text-xl">Payment Link Ready</DialogTitle>
-          <DialogDescription className="text-dark-400">
+          <DialogTitle className="text-foreground text-xl">Payment Link Ready</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Scan the QR code or send the link to the member.
           </DialogDescription>
         </DialogHeader>
@@ -88,11 +88,11 @@ export function RazorpayLinkModal({ isOpen, onClose, paymentUrl, memberPhone, me
           </div>
 
           <div className="flex items-center gap-2 w-full max-w-sm">
-            <div className="flex-1 bg-dark-900 border border-dark-600 rounded-md px-3 py-2 text-sm text-dark-200 truncate overflow-hidden">
+            <div className="flex-1 bg-card border border-border rounded-md px-3 py-2 text-sm text-foreground truncate overflow-hidden">
               {paymentUrl}
             </div>
-            <Button variant="outline" size="icon" onClick={handleCopy} className="border-dark-600 bg-dark-700 hover:bg-dark-600 hover:text-white shrink-0">
-              {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4 text-dark-300" />}
+            <Button variant="outline" size="icon" onClick={handleCopy} className="border-border bg-card hover:bg-muted hover:text-foreground shrink-0">
+              {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
             </Button>
           </div>
         </div>
@@ -100,14 +100,14 @@ export function RazorpayLinkModal({ isOpen, onClose, paymentUrl, memberPhone, me
         <div className="grid grid-cols-2 gap-3 pb-2">
           <Button 
             variant="outline" 
-            className="border-dark-600 bg-dark-800 text-white hover:bg-dark-700"
+            className="border-border bg-muted text-foreground hover:bg-card"
             onClick={() => window.open(paymentUrl, '_blank')}
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             Open Link
           </Button>
           <Button 
-            className="bg-[#25D366] text-white hover:bg-[#1EBE5A] font-medium"
+            className="bg-[#25D366] text-foreground hover:bg-[#1EBE5A] font-medium"
             onClick={handleWhatsApp}
             disabled={!memberPhone}
           >

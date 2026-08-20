@@ -83,56 +83,56 @@ useEffect(() => {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Dumbbell className="w-6 h-6 text-gold-500" />
             PT Packages
           </h1>
-          <p className="text-dark-300 text-sm mt-1">Manage Personal Training pricing and bundles.</p>
+          <p className="text-muted-foreground text-sm mt-1">Manage Personal Training pricing and bundles.</p>
         </div>
         
         {/* Trigger state manually, completely bypassing the TS error */}
         <Button 
           onClick={() => setIsOpen(true)}
-          className="bg-gold-500 text-dark-900 hover:bg-gold-600 font-semibold gap-2 shadow-md shadow-gold-500/10"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold gap-2 shadow-md shadow-gold-500/10"
         >
           <Plus className="w-4 h-4" />
           New Package
         </Button>
 
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogContent className="bg-dark-800 border-dark-600 text-white sm:max-w-md">
+          <DialogContent className="bg-muted border-border text-foreground sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold">Create PT Package</DialogTitle>
             </DialogHeader>
             
             <form onSubmit={handleSubmit} className="space-y-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-dark-200">Package Name *</label>
-                <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. 20 Sessions Elite" className="bg-dark-900 border-dark-600 focus:border-gold-500 text-white" />
+                <label className="text-sm font-medium text-foreground">Package Name *</label>
+                <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. 20 Sessions Elite" className="bg-card border-border focus:border-gold-500 text-foreground" />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-dark-200">Total Sessions *</label>
-                  <Input required type="number" value={formData.total_sessions} onChange={e => setFormData({...formData, total_sessions: e.target.value})} placeholder="e.g. 20" className="bg-dark-900 border-dark-600 focus:border-gold-500 text-white" />
+                  <label className="text-sm font-medium text-foreground">Total Sessions *</label>
+                  <Input required type="number" value={formData.total_sessions} onChange={e => setFormData({...formData, total_sessions: e.target.value})} placeholder="e.g. 20" className="bg-card border-border focus:border-gold-500 text-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-dark-200">Validity (Days) *</label>
-                  <Input required type="number" value={formData.validity_days} onChange={e => setFormData({...formData, validity_days: e.target.value})} placeholder="e.g. 90" className="bg-dark-900 border-dark-600 focus:border-gold-500 text-white" />
+                  <label className="text-sm font-medium text-foreground">Validity (Days) *</label>
+                  <Input required type="number" value={formData.validity_days} onChange={e => setFormData({...formData, validity_days: e.target.value})} placeholder="e.g. 90" className="bg-card border-border focus:border-gold-500 text-foreground" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-dark-200">Price (₹) *</label>
-                <Input required type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="e.g. 5000" className="bg-dark-900 border-dark-600 focus:border-gold-500 text-white" />
+                <label className="text-sm font-medium text-foreground">Price (₹) *</label>
+                <Input required type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="e.g. 5000" className="bg-card border-border focus:border-gold-500 text-foreground" />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-dark-200">Description (Optional)</label>
-                <Input value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Includes diet plan..." className="bg-dark-900 border-dark-600 focus:border-gold-500 text-white" />
+                <label className="text-sm font-medium text-foreground">Description (Optional)</label>
+                <Input value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Includes diet plan..." className="bg-card border-border focus:border-gold-500 text-foreground" />
               </div>
               
-              <Button type="submit" disabled={isSubmitting} className="w-full bg-gold-500 text-dark-900 hover:bg-gold-600 font-bold mt-2">
+              <Button type="submit" disabled={isSubmitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold mt-2">
                 {isSubmitting ? "Saving..." : "Create Package"}
               </Button>
             </form>
@@ -144,42 +144,42 @@ useEffect(() => {
       {loading ? (
         <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 text-gold-500 animate-spin" /></div>
       ) : packages.length === 0 ? (
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-12 text-center shadow-sm">
-          <Dumbbell className="w-12 h-12 text-dark-400 mx-auto mb-3 opacity-20" />
-          <h3 className="text-lg font-medium text-white mb-1">No PT Packages</h3>
-          <p className="text-dark-400 text-sm">Create your first training package to get started.</p>
+        <div className="bg-muted border border-border rounded-xl p-12 text-center shadow-sm">
+          <Dumbbell className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-20" />
+          <h3 className="text-lg font-medium text-foreground mb-1">No PT Packages</h3>
+          <p className="text-muted-foreground text-sm">Create your first training package to get started.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {packages.map(pkg => (
-            <div key={pkg.id} className="bg-dark-800 border border-dark-600 rounded-xl p-6 shadow-sm hover:border-gold-500/30 transition-colors flex flex-col h-full">
+            <div key={pkg.id} className="bg-muted border border-border rounded-xl p-6 shadow-sm hover:border-gold-500/30 transition-colors flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-bold text-white">{pkg.name}</h3>
+                <h3 className="text-lg font-bold text-foreground">{pkg.name}</h3>
                 <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${pkg.is_active ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'}`}>
                   {pkg.is_active ? 'Active' : 'Inactive'}
                 </span>
               </div>
               
               <div className="space-y-3 mb-6 flex-1">
-                <div className="flex items-center text-dark-200 text-sm">
+                <div className="flex items-center text-foreground text-sm">
                   <Dumbbell className="w-4 h-4 mr-3 text-gold-500" />
                   {pkg.total_sessions} Sessions
                 </div>
-                <div className="flex items-center text-dark-200 text-sm">
+                <div className="flex items-center text-foreground text-sm">
                   <Calendar className="w-4 h-4 mr-3 text-gold-500" />
                   Valid for {pkg.validity_days} Days
                 </div>
                 {pkg.description && (
-                  <p className="text-xs text-dark-400 mt-2 line-clamp-2">{pkg.description}</p>
+                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{pkg.description}</p>
                 )}
               </div>
               
-              <div className="pt-4 border-t border-dark-600/50 flex items-center justify-between">
-                <div className="flex items-center text-white font-bold text-xl">
+              <div className="pt-4 border-t border-border/50 flex items-center justify-between">
+                <div className="flex items-center text-foreground font-bold text-xl">
                   <IndianRupee className="w-5 h-5 mr-1 text-gold-500" />
                   {pkg.price.toLocaleString()}
                 </div>
-                <span className="text-xs text-dark-400 font-medium">₹{(pkg.price / pkg.total_sessions).toFixed(0)} / session</span>
+                <span className="text-xs text-muted-foreground font-medium">₹{(pkg.price / pkg.total_sessions).toFixed(0)} / session</span>
               </div>
             </div>
           ))}

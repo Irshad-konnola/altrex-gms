@@ -10,8 +10,8 @@
 //       {/* Header Section */}
 //       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 //         <div>
-//           <h1 className="text-2xl font-bold text-white">Attendance & Logs</h1>
-//           <p className="text-dark-300 text-sm mt-1">Real-time check-ins and gym footfall.</p>
+//           <h1 className="text-2xl font-bold text-foreground">Attendance & Logs</h1>
+//           <p className="text-muted-foreground text-sm mt-1">Real-time check-ins and gym footfall.</p>
 //         </div>
 //         <ManualCheckin />
 //       </div>
@@ -28,31 +28,31 @@
 //         <div className="space-y-6">
           
 //           {/* Today's Overview Widget */}
-//           <div className="bg-dark-800 border border-dark-600 rounded-xl p-6 shadow-sm">
-//             <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider text-dark-300">
+//           <div className="bg-muted border border-border rounded-xl p-6 shadow-sm">
+//             <h3 className="text-foreground font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">
 //               Today's Overview
 //             </h3>
 //             <div className="space-y-4">
-//               <div className="flex items-center justify-between p-3 bg-dark-900/50 rounded-lg border border-dark-700/50">
-//                 <div className="flex items-center gap-3 text-dark-200">
+//               <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg border border-border/50">
+//                 <div className="flex items-center gap-3 text-foreground">
 //                   <Users className="w-5 h-5 text-gold-500" />
 //                   <span className="font-medium">Total Footfall</span>
 //                 </div>
 //                 {/* This will be wired up to a real count next */}
-//                 <span className="text-xl font-bold text-white">--</span>
+//                 <span className="text-xl font-bold text-foreground">--</span>
 //               </div>
-//               <div className="flex items-center justify-between p-3 bg-dark-900/50 rounded-lg border border-dark-700/50">
-//                 <div className="flex items-center gap-3 text-dark-200">
+//               <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg border border-border/50">
+//                 <div className="flex items-center gap-3 text-foreground">
 //                   <Clock className="w-5 h-5 text-gold-500" />
 //                   <span className="font-medium">Peak Hour</span>
 //                 </div>
-//                 <span className="text-xl font-bold text-white">--</span>
+//                 <span className="text-xl font-bold text-foreground">--</span>
 //               </div>
 //             </div>
 //           </div>
 
 //           {/* Hourly Chart Placeholder */}
-//           <div className="bg-dark-800 border border-dark-600 rounded-xl p-6 h-64 flex flex-col items-center justify-center text-dark-400 shadow-sm">
+//           <div className="bg-muted border border-border rounded-xl p-6 h-64 flex flex-col items-center justify-center text-muted-foreground shadow-sm">
 //             <Clock className="w-8 h-8 mb-3 opacity-20" />
 //             <span className="text-sm font-medium">Hourly Chart Data</span>
 //             <span className="text-xs mt-1">Check-in distribution</span>
@@ -77,8 +77,8 @@ export default function AttendancePage() {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Attendance & Logs</h1>
-          <p className="text-dark-300 text-sm mt-1">Real-time check-ins and gym footfall.</p>
+          <h1 className="text-2xl font-bold text-foreground">Attendance & Logs</h1>
+          <p className="text-muted-foreground text-sm mt-1">Real-time check-ins and gym footfall.</p>
         </div>
         <ManualCheckin />
       </div>

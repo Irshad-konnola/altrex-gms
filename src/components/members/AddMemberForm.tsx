@@ -187,27 +187,27 @@ const fileName = `${crypto.randomUUID()}.${fileExt}`
 
 const selectedPlanId = useWatch({ control: form.control, name: "planId" })
   return (
-    <div className="bg-dark-950 border border-dark-800 rounded-2xl p-4 sm:p-8 shadow-xl">
+    <div className="bg-background border border-border rounded-2xl p-4 sm:p-8 shadow-xl">
       
       <div className="flex items-center justify-between sm:justify-start sm:gap-8 mb-8 sm:mb-12 relative">
-        <div className="hidden sm:block absolute top-1/2 left-0 w-full h-0.5 bg-dark-800 -z-10 -translate-y-1/2" />
+        <div className="hidden sm:block absolute top-1/2 left-0 w-full h-0.5 bg-muted -z-10 -translate-y-1/2" />
         {STEPS.map((s) => {
           const isActive = step === s.id
           const isCompleted = step > s.id
           
           return (
-            <div key={s.id} className="flex flex-col items-center gap-2 bg-dark-950 sm:px-2">
+            <div key={s.id} className="flex flex-col items-center gap-2 bg-background sm:px-2">
               <div className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300",
                 isActive ? "border-gold-500 bg-gold-500/10 text-gold-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]" :
-                isCompleted ? "border-gold-500 bg-gold-500 text-dark-950" :
-                "border-dark-700 bg-dark-900 text-dark-400"
+                isCompleted ? "border-gold-500 bg-primary text-primary-foreground" :
+                "border-border bg-card text-muted-foreground"
               )}>
                 {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <s.icon className="w-5 h-5" />}
               </div>
               <span className={cn(
                 "text-xs sm:text-sm font-semibold tracking-wide",
-                isActive || isCompleted ? "text-white" : "text-dark-400"
+                isActive || isCompleted ? "text-foreground" : "text-muted-foreground"
               )}>
                 {s.title}
               </span>
@@ -223,7 +223,7 @@ const selectedPlanId = useWatch({ control: form.control, name: "planId" })
           {/* STEP 1: PERSONAL INFO */}
           <div className={cn("space-y-6 animate-in fade-in slide-in-from-right-4 duration-500", step !== 1 && "hidden")}>
             
-            <label htmlFor="photo-upload" className="flex items-center justify-center w-full sm:w-32 h-32 rounded-2xl bg-dark-900 border border-dark-700 border-dashed text-dark-400 hover:text-gold-500 hover:border-gold-500/50 transition-colors cursor-pointer mb-6 mx-auto sm:mx-0 overflow-hidden relative">
+            <label htmlFor="photo-upload" className="flex items-center justify-center w-full sm:w-32 h-32 rounded-2xl bg-card border border-border border-dashed text-muted-foreground hover:text-gold-500 hover:border-gold-500/50 transition-colors cursor-pointer mb-6 mx-auto sm:mx-0 overflow-hidden relative">
               {imagePreview ? (
                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
               ) : (
@@ -237,36 +237,46 @@ const selectedPlanId = useWatch({ control: form.control, name: "planId" })
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField control={form.control} name="fullName" render={({ field }) => (
-                <FormItem><FormLabel className="text-dark-200">Full Name *</FormLabel>
-                  <FormControl><Input placeholder="John Doe" className="h-12 bg-dark-900 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                <FormItem><FormLabel className="text-foreground">Full Name *</FormLabel>
+                  <FormControl><Input placeholder="John Doe" className="h-12 bg-card border-border text-foreground rounded-xl" {...field} /></FormControl>
                   <FormMessage className="text-red-400" />
                 </FormItem>
               )} />
               
               <FormField control={form.control} name="phone" render={({ field }) => (
-                <FormItem><FormLabel className="text-dark-200">Phone Number *</FormLabel>
-                  <FormControl><Input placeholder="+91 9876543210" className="h-12 bg-dark-900 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                <FormItem><FormLabel className="text-foreground">Phone Number *</FormLabel>
+                  <FormControl>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3 text-muted-foreground font-medium">+91</span>
+                      <Input 
+                        placeholder="9876543210" 
+                        maxLength={10}
+                        className="pl-11 h-12 bg-card border-border text-foreground rounded-xl" 
+                        {...field} 
+                      />
+                    </div>
+                  </FormControl>
                   <FormMessage className="text-red-400" />
                 </FormItem>
               )} />
 
               <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel className="text-dark-200">Email (Optional)</FormLabel>
-                  <FormControl><Input placeholder="john@example.com" className="h-12 bg-dark-900 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                <FormItem><FormLabel className="text-foreground">Email (Optional)</FormLabel>
+                  <FormControl><Input placeholder="john@example.com" className="h-12 bg-card border-border text-foreground rounded-xl" {...field} /></FormControl>
                   <FormMessage className="text-red-400" />
                 </FormItem>
               )} />
 
               <FormField control={form.control} name="dob" render={({ field }) => (
-                <FormItem><FormLabel className="text-dark-200">Date of Birth</FormLabel>
-                  <FormControl><Input type="date" className="h-12 bg-dark-900 border-dark-700 text-white rounded-xl scheme-dark" {...field} /></FormControl>
+                <FormItem><FormLabel className="text-foreground">Date of Birth</FormLabel>
+                  <FormControl><Input type="date" className="h-12 bg-card border-border text-foreground rounded-xl scheme-dark" {...field} /></FormControl>
                 </FormItem>
               )} />
               
               <FormField control={form.control} name="gender" render={({ field }) => (
-                <FormItem><FormLabel className="text-dark-200">Gender</FormLabel>
+                <FormItem><FormLabel className="text-foreground">Gender</FormLabel>
                   <FormControl>
-                    <select className="flex h-12 w-full items-center justify-between rounded-xl border border-dark-700 bg-dark-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold-500/50" {...field}>
+                    <select className="flex h-12 w-full items-center justify-between rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-gold-500/50" {...field}>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
                       <option value="other">Other</option>
@@ -276,33 +286,33 @@ const selectedPlanId = useWatch({ control: form.control, name: "planId" })
               )} />
 
               <FormField control={form.control} name="emergencyContact" render={({ field }) => (
-                <FormItem><FormLabel className="text-dark-200">Emergency Contact (Phone)</FormLabel>
-                  <FormControl><Input placeholder="Relative's phone number" className="h-12 bg-dark-900 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                <FormItem><FormLabel className="text-foreground">Emergency Contact (Phone)</FormLabel>
+                  <FormControl><Input placeholder="Relative's phone number" className="h-12 bg-card border-border text-foreground rounded-xl" {...field} /></FormControl>
                 </FormItem>
               )} />
               <div className="md:col-span-2">
                 <FormField control={form.control} name="address" render={({ field }) => (
-                  <FormItem><FormLabel className="text-dark-200">Full Address</FormLabel>
+                  <FormItem><FormLabel className="text-foreground">Full Address</FormLabel>
                     <FormControl>
-                      <textarea placeholder="Enter complete address..." className="flex min-h-[80px] w-full rounded-xl border border-dark-700 bg-dark-900 px-3 py-2 text-sm text-white placeholder:text-dark-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/50" {...field} />
+                      <textarea placeholder="Enter complete address..." className="flex min-h-[80px] w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/50" {...field} />
                     </FormControl>
                   </FormItem>
                 )} />
               </div>
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 p-5 bg-dark-900/50 border border-dark-800 rounded-xl">
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 p-5 bg-card/50 border border-border rounded-xl">
                 <FormField control={form.control} name="height" render={({ field }) => (
-                  <FormItem><FormLabel className="text-dark-200">Height (cm)</FormLabel>
-                    <FormControl><Input type="number" placeholder="175" className="h-12 bg-dark-950 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                  <FormItem><FormLabel className="text-foreground">Height (cm)</FormLabel>
+                    <FormControl><Input type="number" placeholder="175" className="h-12 bg-background border-border text-foreground rounded-xl" {...field} /></FormControl>
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="weight" render={({ field }) => (
-                  <FormItem><FormLabel className="text-dark-200">Weight (kg)</FormLabel>
-                    <FormControl><Input type="number" placeholder="70" className="h-12 bg-dark-950 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                  <FormItem><FormLabel className="text-foreground">Weight (kg)</FormLabel>
+                    <FormControl><Input type="number" placeholder="70" className="h-12 bg-background border-border text-foreground rounded-xl" {...field} /></FormControl>
                   </FormItem>
                 )} />
                 <div className="flex flex-col space-y-2 justify-end">
-                  <FormLabel className="text-dark-200 flex items-center gap-2"><Activity className="w-4 h-4 text-gold-500" /> Auto BMI</FormLabel>
-                  <div className="h-12 bg-dark-950 border border-dark-700 rounded-xl flex items-center px-4 text-gold-500 font-bold text-lg">
+                  <FormLabel className="text-foreground flex items-center gap-2"><Activity className="w-4 h-4 text-gold-500" /> Auto BMI</FormLabel>
+                  <div className="h-12 bg-background border border-border rounded-xl flex items-center px-4 text-gold-500 font-bold text-lg">
                     {calculatedBmi}
                   </div>
                 </div>
@@ -310,9 +320,9 @@ const selectedPlanId = useWatch({ control: form.control, name: "planId" })
 
               <div className="md:col-span-2">
                 <FormField control={form.control} name="healthNotes" render={({ field }) => (
-                  <FormItem><FormLabel className="text-dark-200">Health Notes / Injuries</FormLabel>
+                  <FormItem><FormLabel className="text-foreground">Health Notes / Injuries</FormLabel>
                     <FormControl>
-                      <textarea placeholder="Any medical conditions we should know about..." className="flex min-h-25 w-full rounded-xl border border-dark-700 bg-dark-900 px-3 py-2 text-sm text-white placeholder:text-dark-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/50" {...field} />
+                      <textarea placeholder="Any medical conditions we should know about..." className="flex min-h-25 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/50" {...field} />
                     </FormControl>
                   </FormItem>
                 )} />
@@ -328,7 +338,7 @@ const selectedPlanId = useWatch({ control: form.control, name: "planId" })
                   <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
                 </div>
               ) : plans.length === 0 ? (
-                <div className="col-span-3 py-12 text-center text-dark-400">
+                <div className="col-span-3 py-12 text-center text-muted-foreground">
                   No active plans found in the database.
                 </div>
               ) : (
@@ -343,13 +353,13 @@ const selectedPlanId = useWatch({ control: form.control, name: "planId" })
                         "p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200 relative overflow-hidden",
                         isSelected 
                           ? "border-gold-500 bg-gold-500/5 shadow-[0_0_20px_rgba(234,179,8,0.1)]" 
-                          : "border-dark-800 bg-dark-900 hover:border-dark-600 hover:bg-dark-800"
+                          : "border-border bg-card hover:border-border hover:bg-muted"
                       )}
                     >
                       {isSelected && <div className="absolute top-0 right-0 p-1.5 bg-gold-500 rounded-bl-xl"><CheckCircle2 className="w-4 h-4 text-dark-950" /></div>}
-                      <h3 className="text-lg font-bold text-white mb-2">{plan.name}</h3>
+                      <h3 className="text-lg font-bold text-foreground mb-2">{plan.name}</h3>
                       <div className="text-3xl font-black text-gold-500 mb-4">₹{plan.price}</div>
-                      <p className="text-sm text-dark-300 font-medium">Valid for {plan.duration_days} days</p>
+                      <p className="text-sm text-muted-foreground font-medium">Valid for {plan.duration_days} days</p>
                     </div>
                   )
                 })
@@ -359,8 +369,8 @@ const selectedPlanId = useWatch({ control: form.control, name: "planId" })
 
             <div className="mt-8 max-w-sm">
               <FormField control={form.control} name="startDate" render={({ field }) => (
-                <FormItem><FormLabel className="text-dark-200">Start Date</FormLabel>
-                  <FormControl><Input type="date" className="h-12 bg-dark-900 border-dark-700 text-white rounded-xl scheme-dark" {...field} /></FormControl>
+                <FormItem><FormLabel className="text-foreground">Start Date</FormLabel>
+                  <FormControl><Input type="date" className="h-12 bg-card border-border text-foreground rounded-xl scheme-dark" {...field} /></FormControl>
                   <FormMessage className="text-red-400" />
                 </FormItem>
               )} />
@@ -371,9 +381,9 @@ const selectedPlanId = useWatch({ control: form.control, name: "planId" })
           <div className={cn("space-y-6 animate-in fade-in slide-in-from-right-4 duration-500", step !== 3 && "hidden")}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField control={form.control} name="paymentMethod" render={({ field }) => (
-                <FormItem><FormLabel className="text-dark-200">Payment Method</FormLabel>
+                <FormItem><FormLabel className="text-foreground">Payment Method</FormLabel>
                   <FormControl>
-                    <select className="flex h-12 w-full items-center justify-between rounded-xl border border-dark-700 bg-dark-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold-500/50" {...field}>
+                    <select className="flex h-12 w-full items-center justify-between rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-gold-500/50" {...field}>
                       <option value="upi">UPI (GPay, PhonePe)</option>
                       <option value="cash">Cash</option>
                       <option value="card">Card / POS</option>
@@ -385,40 +395,40 @@ const selectedPlanId = useWatch({ control: form.control, name: "planId" })
               )} />
 
               <FormField control={form.control} name="amount" render={({ field }) => (
-                <FormItem><FormLabel className="text-dark-200">Amount Received (₹)</FormLabel>
-                  <FormControl><Input type="number" placeholder="0" className="h-12 bg-dark-900 border-dark-700 rounded-xl text-lg font-bold text-gold-500" {...field} /></FormControl>
+                <FormItem><FormLabel className="text-foreground">Amount Received (₹)</FormLabel>
+                  <FormControl><Input type="number" placeholder="0" className="h-12 bg-card border-border rounded-xl text-lg font-bold text-gold-500" {...field} /></FormControl>
                   <FormMessage className="text-red-400" />
                 </FormItem>
               )} />
 
               <div className="md:col-span-2">
                 <FormField control={form.control} name="reference" render={({ field }) => (
-                  <FormItem><FormLabel className="text-dark-200">Reference Number (UTR / Receipt ID)</FormLabel>
-                    <FormControl><Input placeholder="Optional" className="h-12 bg-dark-900 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                  <FormItem><FormLabel className="text-foreground">Reference Number (UTR / Receipt ID)</FormLabel>
+                    <FormControl><Input placeholder="Optional" className="h-12 bg-card border-border text-foreground rounded-xl" {...field} /></FormControl>
                   </FormItem>
                 )} />
               </div>
             </div>
 
-            <div className="pt-6 border-t border-dark-800">
+            <div className="pt-6 border-t border-border">
               <label className="flex items-center gap-3 cursor-pointer group">
-                <input type="checkbox" {...form.register("sendWelcomeMsg")} className="w-5 h-5 rounded border-dark-700 bg-dark-900 checked:bg-gold-500 checked:border-gold-500 text-gold-500 focus:ring-gold-500/50 focus:ring-offset-dark-950" />
+                <input type="checkbox" {...form.register("sendWelcomeMsg")} className="w-5 h-5 rounded border-border bg-card checked:bg-gold-500 checked:border-gold-500 text-gold-500 focus:ring-gold-500/50 focus:ring-offset-dark-950" />
                 <div className="flex flex-col">
-                  <span className="text-white font-medium group-hover:text-gold-500 transition-colors">Send WhatsApp Welcome Message</span>
-                  <span className="text-xs text-dark-400">Includes login details and membership receipt.</span>
+                  <span className="text-foreground font-medium group-hover:text-gold-500 transition-colors">Send WhatsApp Welcome Message</span>
+                  <span className="text-xs text-muted-foreground">Includes login details and membership receipt.</span>
                 </div>
               </label>
             </div>
           </div>
 
           {/* Form Navigation */}
-          <div className="flex items-center justify-between pt-8 border-t border-dark-800">
+          <div className="flex items-center justify-between pt-8 border-t border-border">
             <Button 
               type="button" 
               variant="ghost" 
               onClick={() => setStep(step - 1)}
               disabled={step === 1 || isSubmitting}
-              className="text-dark-300 hover:text-white hover:bg-dark-800 rounded-xl px-6"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl px-6"
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </Button>

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 
 const TABS = ["All", "Active", "Expiring", "Expired", "PT Members"]
 
-export function MemberFilters({ initialSearch, activeTab }: { initialSearch: string, activeTab: string }) {
+export function MemberFilters({ initialSearch, activeTab, initialSort }: { initialSearch: string, activeTab: string, initialSort?: string }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -52,10 +52,23 @@ export function MemberFilters({ initialSearch, activeTab }: { initialSearch: str
     })
   }
 
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const sort = e.target.value
+    const params = new URLSearchParams(searchParams.toString())
+    if (sort) {
+      params.set("sort", sort)
+    } else {
+      params.delete("sort")
+    }
+    startTransition(() => {
+      router.replace(`${pathname}?${params.toString()}`)
+    })
+  }
+
   return (
-    <div className="flex flex-col lg:flex-row justify-between gap-4 bg-dark-950 p-2 border border-dark-800 rounded-2xl shadow-sm relative">
+    <div className="flex flex-col lg:flex-row justify-between gap-4 bg-background p-2 border border-border rounded-2xl shadow-sm relative">
       {/* Loading overlay indicator */}
-      {isPending && <div className="absolute inset-0 bg-dark-950/20 backdrop-blur-[1px] z-10 rounded-2xl transition-all" />}
+      {isPending && <div className="absolute inset-0 bg-background/20 backdrop-blur-[1px] z-10 rounded-2xl transition-all" />}
       
       {/* Interactive Tabs */}
       <div className="flex overflow-x-auto no-scrollbar gap-1 p-1">
@@ -66,8 +79,8 @@ export function MemberFilters({ initialSearch, activeTab }: { initialSearch: str
             className={cn(
               "px-5 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300",
               activeTab === tab 
-                ? "bg-dark-800 text-gold-500 shadow-sm" 
-                : "text-dark-400 hover:text-white hover:bg-dark-900"
+                ? "bg-muted text-gold-500 shadow-sm" 
+                : "text-muted-foreground hover:text-foreground hover:bg-card"
             )}
           >
             {tab}
@@ -75,16 +88,32 @@ export function MemberFilters({ initialSearch, activeTab }: { initialSearch: str
         ))}
       </div>
 
-      {/* Interactive Search */}
-      <div className="relative w-full lg:w-72 shrink-0 p-1">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
-        <Input 
-          type="text" 
-          placeholder="Search by name or phone..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 h-10 bg-dark-900 border-dark-700 text-white focus-visible:ring-gold-500/50 rounded-xl"
-        />
+      <div className="flex gap-2">
+        {/* Interactive Sort */}
+        <div className="p-1 shrink-0">
+          <select 
+            value={initialSort || ""}
+            onChange={handleSortChange}
+            className="h-10 px-3 bg-card border border-border text-foreground text-sm focus:border-gold-500 rounded-xl outline-none"
+          >
+            <option value="">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="name_asc">Name (A-Z)</option>
+            <option value="name_desc">Name (Z-A)</option>
+          </select>
+        </div>
+
+        {/* Interactive Search */}
+        <div className="relative w-full lg:w-64 shrink-0 p-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input 
+            type="text" 
+            placeholder="Search..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-10 bg-card border-border text-foreground focus-visible:ring-gold-500/50 rounded-xl"
+          />
+        </div>
       </div>
     </div>
   )

@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function PlansPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-dark-900 text-white p-4 md:p-6 space-y-6">
+    <div className="flex flex-col min-h-screen bg-card text-foreground p-4 md:p-6 space-y-6">
       <PageHeader title="Membership Plans" breadcrumb="Plans" />
       <PlansClient />
     </div>

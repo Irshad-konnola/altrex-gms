@@ -45,6 +45,26 @@ export async function POST(request: Request) {
       return new Response('OK', { status: 200 })
     }
 
+    // 4.5. Check for Cooldown (2 Hours)
+    const { data: lastCheckIn } = await supabaseAdmin
+      .from('attendance_logs')
+      .select('check_in_at')
+      .eq('member_id', member.id)
+      .order('check_in_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (lastCheckIn) {
+      const lastCheckInTime = new Date(lastCheckIn.check_in_at).getTime()
+      const now = parsed.datetime.getTime()
+      const hoursDiff = (now - lastCheckInTime) / (1000 * 60 * 60)
+      
+      if (hoursDiff < 2) {
+        console.log(`[eSSL] ⏳ Cooldown active for ${member.full_name}. Ignoring duplicate scan.`)
+        return new Response('OK', { status: 200 }) // Ignore silently
+      }
+    }
+
     // 5. Log the successful check-in
     const { error: attendanceError } = await supabaseAdmin
       .from('attendance_logs')

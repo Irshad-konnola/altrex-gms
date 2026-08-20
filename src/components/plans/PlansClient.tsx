@@ -11,12 +11,14 @@ import { PlanFormModal } from './PlanFormModal'
 import { PlanFormValues } from '@/lib/validations/plan.schema'
 
 export function PlansClient() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<MembershipPlan | null>(null)
+  const [page, setPage] = useState(1)
+  const pageSize = 12
+
   const { data: plans, isLoading } = usePlans()
   const { createPlan, updatePlan,archivePlan } = usePlanMutations()
   
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<MembershipPlan | null>(null)
-
   const handleEdit = (plan: MembershipPlan) => {
     setSelectedPlan(plan)
     setIsModalOpen(true)
@@ -69,7 +71,7 @@ const isSubmitting = createPlan.isPending || updatePlan.isPending || archivePlan
         <div /> 
         <Button 
           onClick={handleCreate}
-          className="bg-gold-500 text-dark-900 hover:bg-gold-600 font-semibold px-6"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-6"
         >
           <Plus className="h-4 w-4 mr-2" strokeWidth={3} />
           New plan
@@ -81,23 +83,31 @@ const isSubmitting = createPlan.isPending || updatePlan.isPending || archivePlan
           <Loader2 className="h-8 w-8 animate-spin text-gold-500" />
         </div>
       ) : !plans?.length ? (
-        <div className="text-center py-20 bg-dark-800 rounded-xl border border-dark-600">
-          <p className="text-white font-medium">No membership plans active.</p>
-<p className="text-sm text-dark-400 mt-1">Click &quot;New plan&quot; to create your first pricing tier.</p>        </div>
+        <div className="text-center py-20 bg-muted rounded-xl border border-border">
+          <p className="text-foreground font-medium">No membership plans active.</p>
+<p className="text-sm text-muted-foreground mt-1">Click &quot;New plan&quot; to create your first pricing tier.</p>        </div>
       ) : (
-        <div className="flex flex-wrap justify-center gap-6 lg:gap-8 pt-8 pb-4">
-          {plans.map((plan, index) => {
-            const isPopular = index === 1 
-            return (
-              <div key={plan.id} className="w-full sm:w-[320px] lg:w-85">
-                <PlanCard 
-                  plan={plan}
-                  isPopular={isPopular}
-                  onEdit={handleEdit} 
-                />
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {plans.slice((page - 1) * pageSize, page * pageSize).map((plan) => (
+              <PlanCard 
+                key={plan.id} 
+                plan={plan} 
+                onEdit={handleEdit} 
+              />
+            ))}
+          </div>
+          {plans.length > pageSize && (
+            <div className="flex items-center justify-between px-2 py-4 border-t border-border mt-4">
+              <div className="text-sm text-muted-foreground">
+                Page <span className="font-medium text-foreground">{page}</span> of <span className="font-medium text-foreground">{Math.ceil(plans.length / pageSize)}</span>
               </div>
-            )
-          })}
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
+                <Button variant="outline" size="sm" disabled={page >= Math.ceil(plans.length / pageSize)} onClick={() => setPage(page + 1)}>Next</Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

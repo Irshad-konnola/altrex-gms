@@ -86,7 +86,7 @@ export function MemberAttendanceTab({ memberId }: { memberId: string }) {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-48 bg-dark-950 border border-dark-800 rounded-2xl">
+      <div className="flex justify-center items-center h-48 bg-background border border-border rounded-2xl">
         <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
       </div>
     );
@@ -96,45 +96,45 @@ export function MemberAttendanceTab({ memberId }: { memberId: string }) {
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-dark-950 border border-dark-800 rounded-2xl p-5 flex items-center gap-4">
-          <div className="p-3 bg-dark-900 rounded-xl text-gold-500">
+        <div className="bg-background border border-border rounded-2xl p-5 flex items-center gap-4">
+          <div className="p-3 bg-card rounded-xl text-gold-500">
             <CalendarDays className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm text-dark-400 font-medium">Total Visits</p>
-            <p className="text-2xl font-bold text-white">{stats.total}</p>
+            <p className="text-sm text-muted-foreground font-medium">Total Visits</p>
+            <p className="text-2xl font-bold text-foreground">{stats.total}</p>
           </div>
         </div>
 
-        <div className="bg-dark-950 border border-dark-800 rounded-2xl p-5 flex items-center gap-4">
-          <div className="p-3 bg-dark-900 rounded-xl text-orange-500">
+        <div className="bg-background border border-border rounded-2xl p-5 flex items-center gap-4">
+          <div className="p-3 bg-card rounded-xl text-orange-500">
             <Flame className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm text-dark-400 font-medium">Current Streak</p>
-            <p className="text-2xl font-bold text-white">{stats.streak} days</p>
+            <p className="text-sm text-muted-foreground font-medium">Current Streak</p>
+            <p className="text-2xl font-bold text-foreground">{stats.streak} days</p>
           </div>
         </div>
 
-        <div className="bg-dark-950 border border-dark-800 rounded-2xl p-5 flex items-center gap-4">
-          <div className="p-3 bg-dark-900 rounded-xl text-blue-500">
+        <div className="bg-background border border-border rounded-2xl p-5 flex items-center gap-4">
+          <div className="p-3 bg-card rounded-xl text-blue-500">
             <Activity className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm text-dark-400 font-medium">This Month</p>
-            <p className="text-2xl font-bold text-white">{stats.thisMonth}</p>
+            <p className="text-sm text-muted-foreground font-medium">This Month</p>
+            <p className="text-2xl font-bold text-foreground">{stats.thisMonth}</p>
           </div>
         </div>
       </div>
 
       {/* Heatmap Graph */}
-      <div className="bg-dark-950 border border-dark-800 rounded-2xl p-6 overflow-hidden">
-        <h3 className="text-lg font-bold text-white mb-6">Activity Heatmap</h3>
+      <div className="bg-background border border-border rounded-2xl p-6 overflow-hidden">
+        <h3 className="text-lg font-bold text-foreground mb-6">Activity Heatmap</h3>
 
         <div className="w-full overflow-x-auto no-scrollbar pb-4">
           <div className="min-w-max">
             {/* Day Labels (Mon, Wed, Fri) */}
-            <div className="flex text-xs text-dark-400 font-medium mb-2 gap-2">
+            <div className="flex text-xs text-muted-foreground font-medium mb-2 gap-2">
               <div className="w-6" /> {/* Spacer for labels */}
               <div className="flex-1 flex justify-between px-2">
                 <span>6 Months Ago</span>
@@ -144,7 +144,7 @@ export function MemberAttendanceTab({ memberId }: { memberId: string }) {
 
             <div className="flex gap-2">
               {/* Y-Axis Labels */}
-              <div className="grid grid-rows-7 gap-1.5 text-[10px] text-dark-500 font-medium pr-2 text-right pt-1">
+              <div className="grid grid-rows-7 gap-1.5 text-[10px] text-foreground0 font-medium pr-2 text-right pt-1">
                 <span className="leading-[14px]">Sun</span>
                 <span className="leading-[14px]"></span>
                 <span className="leading-[14px]">Tue</span>
@@ -167,7 +167,7 @@ export function MemberAttendanceTab({ memberId }: { memberId: string }) {
                       className={`w-3.5 h-3.5 rounded-sm transition-colors duration-200 cursor-pointer hover:ring-2 hover:ring-white/30 ${
                         isAttended
                           ? "bg-gold-500 shadow-[0_0_8px_rgba(212,175,55,0.4)]"
-                          : "bg-dark-800 hover:bg-dark-700"
+                          : "bg-muted hover:bg-card"
                       }`}
                     />
                   );

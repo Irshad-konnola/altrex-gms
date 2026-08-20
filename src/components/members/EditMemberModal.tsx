@@ -62,7 +62,7 @@ export function EditMemberModal({ member }: { member: any }) {
     resolver: zodResolver(editSchema),
     defaultValues: {
       fullName: member.full_name || "",
-      phone: member.phone || "",
+      phone: member.phone ? (member.phone.length > 10 && member.phone.startsWith("91") ? member.phone.slice(-10) : member.phone) : "",
       email: member.email === "No email provided" ? "" : member.email || "",
       dob: member.dob === "Not specified" ? "" : member.dob || "",
       gender: member.gender === "Not specified" ? "male" : member.gender || "male",
@@ -123,7 +123,7 @@ const fileName = generateFileName(fileExt!)
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger className="inline-flex items-center justify-center h-10 px-4 py-2 text-sm font-medium border border-dark-700 text-white hover:bg-dark-800 hover:text-gold-500 w-full sm:w-auto rounded-xl transition-colors">
+      <DialogTrigger className="inline-flex items-center justify-center h-10 px-4 py-2 text-sm font-medium border border-border text-foreground hover:bg-muted hover:text-gold-500 w-full sm:w-auto rounded-xl transition-colors">
         <Edit2 className="w-4 h-4 mr-2" />
         Edit Profile
       </DialogTrigger>
@@ -132,7 +132,7 @@ const fileName = generateFileName(fileExt!)
         1. max-w-4xl for even wider layout
         2. Hidden scrollbar using custom classes: [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]
       */}
-<DialogContent className="bg-dark-950 border border-dark-800 text-white w-[95vw] sm:w-full sm:max-w-3xl md:max-w-4xl max-h-[85vh] overflow-y-auto rounded-2xl p-6 sm:p-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">        
+<DialogContent className="bg-background border border-border text-foreground w-[95vw] sm:w-full sm:max-w-3xl md:max-w-4xl max-h-[85vh] overflow-y-auto rounded-2xl p-6 sm:p-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">        
         <DialogHeader className="mb-6">
           <DialogTitle className="text-2xl font-bold tracking-tight">Edit Member Profile</DialogTitle>
         </DialogHeader>
@@ -145,12 +145,12 @@ const fileName = generateFileName(fileExt!)
               {/* Left Column: Photo & Tech Info */}
               <div className="flex flex-col gap-6 w-full md:w-1/3">
                 
-                <label htmlFor="edit-photo-upload" className="flex items-center justify-center w-full aspect-square rounded-2xl bg-dark-900 border border-dark-700 border-dashed text-dark-400 hover:text-gold-500 hover:border-gold-500/50 transition-colors cursor-pointer overflow-hidden relative group">
+                <label htmlFor="edit-photo-upload" className="flex items-center justify-center w-full aspect-square rounded-2xl bg-card border border-border border-dashed text-muted-foreground hover:text-gold-500 hover:border-gold-500/50 transition-colors cursor-pointer overflow-hidden relative group">
                   {imagePreview ? (
                     <>
                       <img src={imagePreview} alt="Preview" className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" />
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Upload className="w-8 h-8 text-white" />
+                        <Upload className="w-8 h-8 text-foreground" />
                       </div>
                     </>
                   ) : (
@@ -162,29 +162,29 @@ const fileName = generateFileName(fileExt!)
                   <input type="file" id="edit-photo-upload" accept="image/*" className="hidden" onChange={handleImageChange} />
                 </label>
 
-                <div className="p-4 bg-dark-900 border border-dark-700 rounded-xl">
+                <div className="p-4 bg-card border border-border rounded-xl">
                   <FormField control={form.control} name="deviceUserId" render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center gap-2 mb-2">
                         <Fingerprint className="w-4 h-4 text-green-500" />
-                        <FormLabel className="text-white font-semibold">eSSL Face ID</FormLabel>
+                        <FormLabel className="text-foreground font-semibold">eSSL Face ID</FormLabel>
                       </div>
                       <FormControl>
-                        <Input placeholder="e.g. 101" className="h-11 bg-dark-950 border-dark-600 text-white rounded-xl font-mono" {...field} />
+                        <Input placeholder="e.g. 101" className="h-11 bg-background border-border text-foreground rounded-xl font-mono" {...field} />
                       </FormControl>
                     </FormItem>
                   )} />
                 </div>
 
-                <div className="p-4 bg-dark-900 border border-dark-700 rounded-xl">
+                <div className="p-4 bg-card border border-border rounded-xl">
                   <FormField control={form.control} name="bmi" render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center gap-2 mb-2">
                         <Activity className="w-4 h-4 text-gold-500" />
-                        <FormLabel className="text-white font-semibold">BMI</FormLabel>
+                        <FormLabel className="text-foreground font-semibold">BMI</FormLabel>
                       </div>
                       <FormControl>
-                        <Input type="number" step="0.01" placeholder="e.g. 24.5" className="h-11 bg-dark-950 border-dark-600 text-white rounded-xl" {...field} />
+                        <Input type="number" step="0.01" placeholder="e.g. 24.5" className="h-11 bg-background border-border text-foreground rounded-xl" {...field} />
                       </FormControl>
                     </FormItem>
                   )} />
@@ -194,35 +194,44 @@ const fileName = generateFileName(fileExt!)
               {/* Right Column: Personal Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full md:w-2/3">
                 <FormField control={form.control} name="fullName" render={({ field }) => (
-                  <FormItem><FormLabel className="text-dark-200">Full Name *</FormLabel>
-                    <FormControl><Input className="h-11 bg-dark-900 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                  <FormItem><FormLabel className="text-foreground">Full Name *</FormLabel>
+                    <FormControl><Input className="h-11 bg-card border-border text-foreground rounded-xl" {...field} /></FormControl>
                     <FormMessage className="text-red-400 text-xs" />
                   </FormItem>
                 )} />
                 
                 <FormField control={form.control} name="phone" render={({ field }) => (
-                  <FormItem><FormLabel className="text-dark-200">Phone Number *</FormLabel>
-                    <FormControl><Input className="h-11 bg-dark-900 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                  <FormItem><FormLabel className="text-foreground">Phone Number *</FormLabel>
+                    <FormControl>
+                      <div className="relative flex items-center">
+                        <span className="absolute left-3 text-muted-foreground font-medium">+91</span>
+                        <Input 
+                          maxLength={10}
+                          className="pl-11 h-11 bg-card border-border text-foreground rounded-xl" 
+                          {...field} 
+                        />
+                      </div>
+                    </FormControl>
                     <FormMessage className="text-red-400 text-xs" />
                   </FormItem>
                 )} />
 
                 <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem><FormLabel className="text-dark-200">Email (Optional)</FormLabel>
-                    <FormControl><Input className="h-11 bg-dark-900 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                  <FormItem><FormLabel className="text-foreground">Email (Optional)</FormLabel>
+                    <FormControl><Input className="h-11 bg-card border-border text-foreground rounded-xl" {...field} /></FormControl>
                   </FormItem>
                 )} />
 
                 <FormField control={form.control} name="dob" render={({ field }) => (
-                  <FormItem><FormLabel className="text-dark-200">Date of Birth</FormLabel>
-                    <FormControl><Input type="date" className="h-11 bg-dark-900 border-dark-700 text-white rounded-xl scheme-dark" {...field} /></FormControl>
+                  <FormItem><FormLabel className="text-foreground">Date of Birth</FormLabel>
+                    <FormControl><Input type="date" className="h-11 bg-card border-border text-foreground rounded-xl scheme-dark" {...field} /></FormControl>
                   </FormItem>
                 )} />
                 
                 <FormField control={form.control} name="gender" render={({ field }) => (
-                  <FormItem><FormLabel className="text-dark-200">Gender</FormLabel>
+                  <FormItem><FormLabel className="text-foreground">Gender</FormLabel>
                     <FormControl>
-                      <select className="flex h-11 w-full items-center justify-between rounded-xl border border-dark-700 bg-dark-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-gold-500/50" {...field}>
+                      <select className="flex h-11 w-full items-center justify-between rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-gold-500/50" {...field}>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                         <option value="other">Other</option>
@@ -232,24 +241,24 @@ const fileName = generateFileName(fileExt!)
                 )} />
 
                 <FormField control={form.control} name="emergencyContact" render={({ field }) => (
-                  <FormItem><FormLabel className="text-dark-200">Emergency Contact</FormLabel>
-                    <FormControl><Input className="h-11 bg-dark-900 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                  <FormItem><FormLabel className="text-foreground">Emergency Contact</FormLabel>
+                    <FormControl><Input className="h-11 bg-card border-border text-foreground rounded-xl" {...field} /></FormControl>
                   </FormItem>
                 )} />
 
                 <div className="sm:col-span-2">
                   <FormField control={form.control} name="address" render={({ field }) => (
-                    <FormItem><FormLabel className="text-dark-200">Address</FormLabel>
-                      <FormControl><Input className="h-11 bg-dark-900 border-dark-700 text-white rounded-xl" {...field} /></FormControl>
+                    <FormItem><FormLabel className="text-foreground">Address</FormLabel>
+                      <FormControl><Input className="h-11 bg-card border-border text-foreground rounded-xl" {...field} /></FormControl>
                     </FormItem>
                   )} />
                 </div>
 
                 <div className="sm:col-span-2">
                   <FormField control={form.control} name="healthNotes" render={({ field }) => (
-                    <FormItem><FormLabel className="text-dark-200">Health Notes / Injuries</FormLabel>
+                    <FormItem><FormLabel className="text-foreground">Health Notes / Injuries</FormLabel>
                       <FormControl>
-                        <textarea className="flex min-h-[120px] w-full rounded-xl border border-dark-700 bg-dark-900 px-4 py-3 text-sm text-white placeholder:text-dark-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/50" {...field} />
+                        <textarea className="flex min-h-[120px] w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/50" {...field} />
                       </FormControl>
                     </FormItem>
                   )} />
@@ -257,8 +266,8 @@ const fileName = generateFileName(fileExt!)
               </div>
             </div>
 
-            <DialogFooter className="pt-6 mt-6 border-t border-dark-800">
-              <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-dark-300 hover:text-white rounded-xl px-6 h-11" disabled={isSubmitting}>
+            <DialogFooter className="pt-6 mt-6 border-t border-border">
+              <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground rounded-xl px-6 h-11" disabled={isSubmitting}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting} className="bg-gold-500 hover:bg-gold-600 text-dark-950 font-bold rounded-xl shadow-[0_0_15px_rgba(234,179,8,0.2)] px-8 h-11">

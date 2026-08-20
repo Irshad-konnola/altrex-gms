@@ -20,7 +20,7 @@ export default async function MemberDetailsPage({ params }: { params: Promise<{ 
       <div>
         <Link 
           href="/members" 
-          className="inline-flex items-center text-sm font-medium text-dark-400 hover:text-gold-500 transition-colors bg-dark-950 border border-dark-800 px-3 py-2 rounded-lg"
+          className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-gold-500 transition-colors bg-background border border-border px-3 py-2 rounded-lg"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
           Back to Members

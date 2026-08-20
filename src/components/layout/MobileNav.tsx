@@ -18,7 +18,7 @@ export function MobileNav() {
 
   return (
     // Replaced the flat bottom bar with a floating, blurred glass dock
-    <div className="lg:hidden fixed bottom-4 left-4 right-4 h-16 bg-dark-900/85 backdrop-blur-xl border border-dark-700/50 rounded-2xl z-50 flex items-center justify-around px-2 shadow-2xl shadow-black/80 pb-safe-auto">
+    <div className="lg:hidden fixed bottom-4 left-4 right-4 h-16 bg-card/85 backdrop-blur-xl border border-border/50 rounded-2xl z-50 flex items-center justify-around px-2 shadow-2xl shadow-black/80 pb-safe-auto">
       {mobileRoutes.map((route) => {
         const isActive = pathname.startsWith(route.href)
         
@@ -31,7 +31,7 @@ export function MobileNav() {
             {/* Active Pill Background */}
             <div className={cn(
               "absolute inset-y-1.5 inset-x-2 rounded-xl transition-all duration-300",
-              isActive ? "bg-gold-500/10" : "opacity-0 group-hover:bg-dark-800/50"
+              isActive ? "bg-gold-500/10" : "opacity-0 group-hover:bg-muted/50"
             )} />
 
             <div className="relative flex flex-col items-center space-y-1 z-10">
@@ -41,13 +41,13 @@ export function MobileNav() {
                   "w-5 h-5 transition-all duration-300",
                   isActive 
                     ? "text-gold-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)] -translate-y-0.5" 
-                    : "text-dark-400 group-hover:text-dark-200"
+                    : "text-muted-foreground group-hover:text-foreground"
                 )} 
               />
               <span 
                 className={cn(
                   "text-[10px] font-semibold tracking-wide transition-all duration-300",
-                  isActive ? "text-gold-500" : "text-dark-500 group-hover:text-dark-300"
+                  isActive ? "text-gold-500" : "text-foreground0 group-hover:text-muted-foreground"
                 )}
               >
                 {route.label}

@@ -87,14 +87,18 @@ export function useAttendanceFeed() {
   useEffect(() => {
     // 1. Fetch the initial load of recent check-ins
     const fetchInitial = async () => {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
       const { data, error } = await supabase
         .from('attendance_logs')
         .select(`
           id, member_id, check_in_at, method,
           members (full_name, photo_url, status)
         `)
+        .gte('check_in_at', today.toISOString())
         .order('check_in_at', { ascending: false })
-        .limit(20)
+        .limit(30)
 
       if (error) {
         console.error("Supabase Read Error (Attendance):", error.message)
@@ -129,7 +133,7 @@ export function useAttendanceFeed() {
               members: member,
             } as unknown as LiveAttendance
 
-            setFeed((current) => [newEntry, ...current].slice(0, 50))
+            setFeed((current) => [newEntry, ...current].slice(0, 30))
           }
         }
       )

@@ -22,15 +22,15 @@ export function RevenueChart({ data = [], totalRevenue = 0, trendPercentage = 0,
   const isPositive = trendPercentage >= 0
 
   return (
-    <Card className="bg-dark-700 border-none shadow-xl shadow-black/40 mt-6 overflow-hidden">
+    <Card className="bg-card border-none shadow-xl shadow-black/40 mt-6 overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between pb-8">
         <div>
-          <CardTitle className="text-lg font-bold text-white mb-1">Revenue this month</CardTitle>
-          <p className="text-xs text-dark-400">Daily collection across cash, UPI and card</p>
+          <CardTitle className="text-lg font-bold text-foreground mb-1">Revenue this month</CardTitle>
+          <p className="text-xs text-muted-foreground">Daily collection across cash, UPI and card</p>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold text-white">
-            {isLoading ? <span className="text-transparent bg-dark-600 animate-pulse rounded w-24 h-8 inline-block" /> : formatCurrency(totalRevenue)}
+          <div className="text-2xl font-bold text-foreground">
+            {isLoading ? <span className="text-transparent bg-muted animate-pulse rounded w-24 h-8 inline-block" /> : formatCurrency(totalRevenue)}
           </div>
           {!isLoading && (
             <div className={`text-xs font-medium mt-1 ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
@@ -73,7 +73,7 @@ export function RevenueChart({ data = [], totalRevenue = 0, trendPercentage = 0,
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="w-full h-full flex justify-center items-center text-dark-400 text-sm">
+            <div className="w-full h-full flex justify-center items-center text-muted-foreground text-sm">
               No revenue recorded for this period.
             </div>
           )}

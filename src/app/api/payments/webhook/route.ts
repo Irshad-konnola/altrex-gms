@@ -69,7 +69,9 @@ export async function POST(request: Request) {
                 .limit(1);
 
               const currentMem = activeMems?.[0];
-              if (currentMem && new Date(currentMem.end_date) > startDate) {
+              if (notes.start_date) {
+                startDate = new Date(notes.start_date);
+              } else if (currentMem && new Date(currentMem.end_date) > startDate) {
                 startDate = new Date(currentMem.end_date);
               }
 
