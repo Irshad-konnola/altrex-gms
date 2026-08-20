@@ -1,5 +1,7 @@
 // src/app/api/cron/renewal-reminders/route.ts
 import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { createClient } from '@supabase/supabase-js'
 import { addDays, format } from 'date-fns'
 import { sendTemplateMessage } from '@/lib/whatsapp/client'

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET() {
   try {
     const supabase = await createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     const db = supabase as any
 
     // Fetch all active assignments, joining with members and pt_packages tables

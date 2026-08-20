@@ -64,7 +64,7 @@ export function useSidebarPanels() {
       }
 
       // 2. Cast the expiring array explicitly
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       const expiring = (expiringData || []).map((item: any) => ({
         id: item.members?.id,
         full_name: item.members?.full_name,

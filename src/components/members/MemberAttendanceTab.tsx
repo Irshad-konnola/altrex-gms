@@ -40,7 +40,7 @@ export function MemberAttendanceTab({ memberId }: { memberId: string }) {
       const datesSet = new Set<string>();
       let monthCount = 0;
       const thisMonthStart = startOfMonth(new Date());
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       data?.forEach((log: any) => {
         const dateObj = new Date(log.check_in_at);
         datesSet.add(format(dateObj, "yyyy-MM-dd"));

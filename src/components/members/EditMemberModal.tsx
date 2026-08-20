@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @next/next/no-img-element, @typescript-eslint/no-unused-vars */
+/* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars */
 "use client"
 
 import { useState } from "react"

@@ -66,7 +66,7 @@ export function RevenueChart({ data = [], totalRevenue = 0, trendPercentage = 0,
                   cursor={{ fill: '#2A2A2A' }}
                   contentStyle={{ backgroundColor: '#141414', border: '1px solid #2A2A2A', borderRadius: '8px' }}
                   itemStyle={{ color: '#D4AF37' }}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  
                   formatter={(value: any) => [formatCurrency(Number(value) || 0), 'Revenue']}
                 />
                 <Bar dataKey="revenue" fill="#D4AF37" radius={[4, 4, 0, 0]} />

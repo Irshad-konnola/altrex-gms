@@ -1,5 +1,7 @@
 // src/app/api/cron/inactivity-check/route.ts
 import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { createClient } from '@supabase/supabase-js'
 import { differenceInDays } from 'date-fns'
 import { sendTemplateMessage } from '@/lib/whatsapp/client'

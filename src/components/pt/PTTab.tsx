@@ -81,7 +81,7 @@ export function PTTab({ memberId }: { memberId: string }) {
       
       fetchPTData() // Refresh UI instantly
     // 🌟 FIX: Added the specific ESLint ignore comment exactly one line above the 'any'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     } catch (error: any) {
       toast.error(error.message)
     } finally {

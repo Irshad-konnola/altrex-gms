@@ -30,7 +30,7 @@ export function RenewPlanModal({
   currentEndDate?: string
 }) {
   const [isOpen, setIsOpen] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   const [plans, setPlans] = useState<any[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   
@@ -89,7 +89,7 @@ export function RenewPlanModal({
               setAmount("")
               setPaymentMethod("upi")
             },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            
             onError: (err: any) => {
               toast.error(err.message || "Failed to generate link")
             }

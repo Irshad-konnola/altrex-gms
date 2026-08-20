@@ -70,9 +70,9 @@ export function ManualCheckin() {
       setSearch("")
       setIsOpen(false)
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      toast.error(error.message || "Failed to process manual check-in")
+      toast.error((error as any).message || "Failed to process manual check-in")
     } finally {
       setCheckingInId(null)
     }

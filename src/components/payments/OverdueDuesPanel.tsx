@@ -18,7 +18,7 @@ export function OverdueDuesPanel() {
   const { generateRazorpayLink } = usePaymentMutations()
   const [loadingId, setLoadingId] = useState<string | null>(null)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   const handleSendReminder = async (member: any) => {
     if (!member.phone) {
       toast.error("No phone number on file for this member")
@@ -66,7 +66,7 @@ export function OverdueDuesPanel() {
       if (!waResponse.ok) throw new Error("Failed to send WhatsApp message")
 
       toast.success(`Reminder sent to ${member.full_name}`)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     } catch (error: any) {
       console.error(error)
       toast.error(error.message || "Failed to send reminder")
@@ -93,7 +93,7 @@ export function OverdueDuesPanel() {
         ) : (
           <div className="space-y-4">
             {/* 🔴 FIX: Added ': any' to member below to clear the TypeScript 'never' error */}
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            { }
             {overdueMembers.map((member: any) => {
               const plan = member.current_memberships?.[0]?.membership_plans
               const endDate = member.current_memberships?.[0]?.end_date

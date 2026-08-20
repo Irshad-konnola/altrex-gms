@@ -41,6 +41,7 @@ export function AssignPT({ memberId, onAssigned }: { memberId: string, onAssigne
     if (formData.pt_package_id) {
       const selected = packages.find(p => p.id === formData.pt_package_id)
       if (selected) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormData(prev => ({ ...prev, amount_paid: selected.price.toString() }))
       }
     }
@@ -53,7 +54,7 @@ export function AssignPT({ memberId, onAssigned }: { memberId: string, onAssigne
         try {
           const res = await fetch('/api/pt/packages')
           const data = await res.json()
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          
           const activePackages = data.filter((p: any) => p.is_active)
           setPackages(activePackages)
           if (activePackages.length > 0) {
@@ -119,7 +120,7 @@ export function AssignPT({ memberId, onAssigned }: { memberId: string, onAssigne
               if (onAssigned) onAssigned()
               setIsSubmitting(false)
             },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            
             onError: (err: any) => {
               toast.error(err.message || "Failed to generate link");
               setIsSubmitting(false);

@@ -18,7 +18,7 @@ export function usePaymentMutations() {
   const queryClient = useQueryClient();
 
   // Bypass strict typing until Supabase Database types are generated
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   const db = supabase as any;
 
   const recordPayment = useMutation({

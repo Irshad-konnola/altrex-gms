@@ -63,16 +63,16 @@ const [modalData, setModalData] = useState<{ url: string; phone?: string; member
       const { data: ptData } = await supabase.from('pt_assignments').select('pt_packages(price)').eq('member_id', memberId);
 
       let totalPaid = 0;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       payData?.forEach((p: any) => totalPaid += Number(p.amount));
 
       let totalBilled = 0;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       memData?.forEach((m: any) => {
         const price = Array.isArray(m.membership_plans) ? m.membership_plans[0]?.price : m.membership_plans?.price;
         totalBilled += Number(price || 0);
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       ptData?.forEach((pt: any) => {
         const price = Array.isArray(pt.pt_packages) ? pt.pt_packages[0]?.price : pt.pt_packages?.price;
         totalBilled += Number(price || 0);
@@ -152,7 +152,7 @@ setModalData({ url: shortUrl, phone: selectedMember?.phone, memberId: memberId }
               setMemberDues(0);
               setIsSubmitting(false);
             },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            
             onError: (err: any) => {
               toast.error(err.message || "Failed to generate link");
               setIsSubmitting(false);

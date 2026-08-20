@@ -1,12 +1,14 @@
 // src/app/api/reports/summary/route.ts
 import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { createClient } from '@/lib/supabase/server'
 import { startOfMonth, subMonths, format } from 'date-fns'
 
 export async function GET() {
   try {
     const supabase = await createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     const db = supabase as any
 
     // 1. Get Member Status Counts
@@ -20,7 +22,7 @@ export async function GET() {
     let expiringMembers = 0
     let expiredMembers = 0
     let activePT = 0
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     members.forEach((m: any) => {
       if (m.status === 'active') activeMembers++
       if (m.status === 'expiring') expiringMembers++
@@ -59,7 +61,7 @@ export async function GET() {
 
     // Populate the map with actual revenue
     if (payments) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       payments.forEach((payment: any) => {
         const paymentMonth = format(new Date(payment.created_at), 'MMM')
         if (revenueMap.has(paymentMonth)) {

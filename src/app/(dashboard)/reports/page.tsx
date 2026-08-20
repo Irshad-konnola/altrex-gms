@@ -114,7 +114,7 @@ export default function ReportsPage() {
                 <Tooltip 
                   cursor={{ fill: '#27272a' }}
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#3f3f46', color: '#fff', borderRadius: '8px' }}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  
                   formatter={(value: any) => [`₹${Number(value).toLocaleString()}`, 'Revenue']}
                 />
                 <Bar dataKey="revenue" fill="#eab308" radius={[4, 4, 0, 0]} />

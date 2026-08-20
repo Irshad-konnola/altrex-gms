@@ -7,7 +7,7 @@ import { sendTemplateMessage } from '@/lib/whatsapp/client'
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     const db = supabase as any
     
     const body = await request.json()

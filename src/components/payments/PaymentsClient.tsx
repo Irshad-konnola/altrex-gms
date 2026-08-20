@@ -59,7 +59,7 @@ export function PaymentsClient() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'payments' },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        
         (payload: any) => {
           console.log('Live payment received!', payload)
           // Only show toast if it's a Razorpay webhook (e.g. method = 'razorpay')

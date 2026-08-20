@@ -28,7 +28,7 @@ export function usePlanMutations() {
       const payload = { ...newPlan, sort_order: nextOrder }
 
       // FIX: Cast the entire query builder to 'any' to bypass the 'never' restriction
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       const { data, error } = await (supabase.from('membership_plans') as any)
         .insert([payload])
         .select()
@@ -51,7 +51,7 @@ export function usePlanMutations() {
   const updatePlan = useMutation({
     mutationFn: async ({ id, updates }: { id: string, updates: PlanMutationPayload }) => {
       // FIX: Cast the entire query builder to 'any' to bypass the 'never' restriction
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       const { data, error } = await (supabase.from('membership_plans') as any)
         .update(updates)
         .eq('id', id)
@@ -75,7 +75,7 @@ export function usePlanMutations() {
   // Archive Plan Mutation (Soft Delete)
   const archivePlan = useMutation({
     mutationFn: async (id: string) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        
       const { data, error } = await (supabase.from('membership_plans') as any)
         .update({ is_active: false }) // Simply hide it from the active list
         .eq('id', id)

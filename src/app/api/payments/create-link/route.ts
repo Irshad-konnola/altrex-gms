@@ -43,21 +43,23 @@ export async function POST(request: Request) {
       linkId: paymentLink.id,
       shortUrl: paymentLink.short_url,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Razorpay API Error:', JSON.stringify(error, null, 2))
     
     // Extract exact Razorpay error description if available
     let errorMessage = 'Unknown error occurred';
-    if (error?.error?.description) {
-      errorMessage = error.error.description;
-    } else if (error?.message) {
-      errorMessage = error.message;
+    const err = error as any;
+    
+    if (err?.error?.description) {
+      errorMessage = err.error.description;
+    } else if (err?.message) {
+      errorMessage = err.message;
     } else if (typeof error === 'string') {
       errorMessage = error;
     }
     
     // 🌟 MOCK LINK BYPASS: If test mode limit is reached, return a fake link to unblock UI testing
-    if (errorMessage.toLowerCase().includes('limit of 30 reached') || error?.error?.code === 'RATE_LIMIT_EXCEEDED') {
+    if (errorMessage.toLowerCase().includes('limit of 30 reached') || err?.error?.code === 'RATE_LIMIT_EXCEEDED') {
       console.warn('⚠️ Razorpay Test Mode limit reached. Generating mock payment link for local testing.');
       return NextResponse.json({
         success: true,

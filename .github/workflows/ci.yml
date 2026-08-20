@@ -1,33 +1,37 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main, master ]
   pull_request:
-    branches: [main, develop]
+    branches: [ main, master ]
 
 jobs:
-  lint-and-build:
+  build-and-test:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22' # Bumped to Node 22 to clear Supabase warning
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: "https://dummy-project.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "dummy-anon-key"
-          SUPABASE_SERVICE_ROLE_KEY: "dummy-service-key"
-          CRON_SECRET: "dummy-cron-secret"
-          RAZORPAY_KEY_ID: "dummy-razorpay-id"
-          RAZORPAY_KEY_SECRET: "dummy-razorpay-secret"
-          RAZORPAY_WEBHOOK_SECRET: "dummy-razorpay-webhook"
-          OWNER_PHONE_NUMBER: "dummy-phone"
-          # Meta WhatsApp API Setup
-          WHATSAPP_ACCESS_TOKEN: "dummy-token"
-          WHATSAPP_PHONE_NUMBER_ID: "dummy-phone-id"
-          WHATSAPP_WEBHOOK_VERIFY_TOKEN: "dummy-verify-token"
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Type Check
+      run: npx tsc --noEmit
+      
+    - name: Lint
+      run: npm run lint
+      
+    - name: Build Next.js App
+      run: npm run build
+      env:
+        # Mock environment variables needed for build
+        NEXT_PUBLIC_SUPABASE_URL: "https://mock.supabase.co"
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "mock-key"
+

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 
 export function MemberPaymentsTab({ memberId }: { memberId: string }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   const [payments, setPayments] = useState<any[]>([])
   const [lifetimeBilled, setLifetimeBilled] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -15,7 +15,7 @@ export function MemberPaymentsTab({ memberId }: { memberId: string }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       const { data: payData }: any = await supabase
         .from('payments')
         .select('*')

@@ -29,7 +29,7 @@ export function RazorpayLinkModal({ isOpen, onClose, paymentUrl, memberPhone, me
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'payments' },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        
         (payload: any) => {
           // If the new payment matches the member we generated the QR code for...
           if (payload.new.member_id === memberId) {

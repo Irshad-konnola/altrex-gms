@@ -1,5 +1,5 @@
 // src/app/(dashboard)/members/page.tsx
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import Link from "next/link"
 import { UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
