@@ -43,7 +43,6 @@ export function generatePaymentReceipt(payment: any) {
   // Footer
   doc.setFontSize(10)
   doc.setTextColor(150)
-  // @ts-ignore
   const finalY = (doc as any).lastAutoTable.finalY || 100
   doc.text('Thank you for your payment!', 105, finalY + 20, { align: 'center' })
   doc.text('For any queries, contact support.', 105, finalY + 26, { align: 'center' })
