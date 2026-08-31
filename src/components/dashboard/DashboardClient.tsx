@@ -7,10 +7,12 @@ import { DashboardFilter } from './DashboardFilter'
 import { LiveFeed } from './LiveFeed'
 import { ExpiringPanel } from './ExpiringPanel'
 import { InactivePanel } from './InactivePanel'
-import { RevenueChart } from './RevenueChart'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Plus, Users, UserCheck, Clock, IndianRupee } from 'lucide-react'
 import Link from 'next/link'
+
+const RevenueChart = dynamic(() => import('./RevenueChart').then(mod => mod.RevenueChart), { ssr: false })
 
 export function DashboardClient() {
   const [dateRange, setDateRange] = useState<DateRange>('month')

@@ -1,7 +1,6 @@
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
-
-export function generatePaymentReceipt(payment: any) {
+export async function generatePaymentReceipt(payment: any) {
+  const { default: jsPDF } = await import('jspdf')
+  const { default: autoTable } = await import('jspdf-autotable')
   const doc = new jsPDF()
   
   // Header
