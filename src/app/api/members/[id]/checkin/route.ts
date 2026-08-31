@@ -21,6 +21,28 @@ export async function POST(
       return NextResponse.json({ error: 'Member ID is required' }, { status: 400 })
     }
 
+    // 2-HOUR COOLDOWN LOGIC
+    // Get the most recent check-in for this member
+    const { data: lastCheckIn } = await supabaseAdmin
+      .from('attendance_logs')
+      .select('check_in_at')
+      .eq('member_id', memberId)
+      .order('check_in_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (lastCheckIn) {
+      const lastCheckInTime = new Date(lastCheckIn.check_in_at).getTime()
+      const now = new Date().getTime()
+      const hoursDiff = (now - lastCheckInTime) / (1000 * 60 * 60)
+      
+      if (hoursDiff < 2) {
+        return NextResponse.json({ 
+          error: `Cooldown active: Member checked in ${Math.round(hoursDiff * 60)} minutes ago. Please wait 2 hours.` 
+        }, { status: 429 })
+      }
+    }
+
     // Insert the attendance log with method = 'manual'
     const { error } = await supabaseAdmin
       .from('attendance_logs')

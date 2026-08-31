@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     const db = supabase as any
     
     const { assignment_id } = await request.json()

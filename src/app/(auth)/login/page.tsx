@@ -64,10 +64,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex bg-dark-900 text-dark-50">
+    <div className="min-h-screen w-full flex bg-card text-foreground">
       
       {/* Left Panel - Premium Branding */}
-      <div className="hidden lg:flex w-1/2 bg-dark-950 border-r border-dark-800 flex-col justify-between p-16 relative overflow-hidden">
+      <div className="hidden lg:flex w-1/2 bg-background border-r border-border flex-col justify-between p-16 relative overflow-hidden">
         
         {/* Glow Effects */}
         <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-gold-500/10 blur-[120px] rounded-full pointer-events-none" />
@@ -78,7 +78,7 @@ export default function LoginPage() {
             <div className="bg-gradient-to-br from-gold-300 via-gold-500 to-gold-700 p-2.5 rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.3)]">
               <Dumbbell className="w-6 h-6 text-dark-950" strokeWidth={2.5} />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-white">Altrex GMS</span>
+            <span className="text-2xl font-bold tracking-tight text-foreground">Altrex GMS</span>
           </div>
           
           <h1 className="text-5xl font-bold leading-tight mb-6 tracking-tight">
@@ -88,28 +88,28 @@ export default function LoginPage() {
               absolute precision.
             </span>
           </h1>
-          <p className="text-dark-300 text-lg max-w-md leading-relaxed">
+          <p className="text-muted-foreground text-lg max-w-md leading-relaxed">
             The complete, AI-assisted operating system built exclusively for Altrex Fitness.
           </p>
         </div>
 
         <div className="space-y-8 relative z-10">
           <div className="flex items-center gap-5">
-            <div className="bg-dark-900 border border-dark-800 p-4 rounded-2xl text-gold-500 shadow-lg shadow-black/50">
+            <div className="bg-card border border-border p-4 rounded-2xl text-gold-500 shadow-lg shadow-black/50">
               <Zap className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-semibold text-white text-lg">Real-time Check-ins</h3>
-              <p className="text-dark-300">Live eSSL face recognition feed.</p>
+              <h3 className="font-semibold text-foreground text-lg">Real-time Check-ins</h3>
+              <p className="text-muted-foreground">Live eSSL face recognition feed.</p>
             </div>
           </div>
           <div className="flex items-center gap-5">
-            <div className="bg-dark-900 border border-dark-800 p-4 rounded-2xl text-gold-500 shadow-lg shadow-black/50">
+            <div className="bg-card border border-border p-4 rounded-2xl text-gold-500 shadow-lg shadow-black/50">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-semibold text-white text-lg">Automated Renewals</h3>
-              <p className="text-dark-300">WhatsApp reminders & Razorpay links.</p>
+              <h3 className="font-semibold text-foreground text-lg">Automated Renewals</h3>
+              <p className="text-muted-foreground">WhatsApp reminders & Razorpay links.</p>
             </div>
           </div>
         </div>
@@ -120,19 +120,19 @@ export default function LoginPage() {
         <div className="w-full max-w-[420px] space-y-10">
           
           <div className="text-center lg:text-left space-y-2">
-            <h2 className="text-4xl font-bold tracking-tight text-white">Sign In</h2>
-            <p className="text-dark-300 text-lg">Select your role to securely access the system.</p>
+            <h2 className="text-4xl font-bold tracking-tight text-foreground">Sign In</h2>
+            <p className="text-muted-foreground text-lg">Select your role to securely access the system.</p>
           </div>
 
           <div className="space-y-8">
             {/* Custom Premium Role Selector */}
-            <div className="relative flex p-1.5 bg-dark-950 border border-dark-800 rounded-2xl shadow-inner">
+            <div className="relative flex p-1.5 bg-background border border-border rounded-2xl shadow-inner">
               <button
                 type="button"
                 onClick={() => setRole("owner")}
                 className={cn(
                   "flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 z-10",
-                  role === "owner" ? "text-dark-950" : "text-dark-400 hover:text-white"
+                  role === "owner" ? "text-dark-950" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 Gym Owner
@@ -142,7 +142,7 @@ export default function LoginPage() {
                 onClick={() => setRole("front_desk")}
                 className={cn(
                   "flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300 z-10",
-                  role === "front_desk" ? "text-dark-950" : "text-dark-400 hover:text-white"
+                  role === "front_desk" ? "text-dark-950" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 Front Desk
@@ -164,11 +164,11 @@ export default function LoginPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-dark-200 font-medium ml-1">Email Address</FormLabel>
+                      <FormLabel className="text-foreground font-medium ml-1">Email Address</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="admin@altrex.com" 
-                          className="h-12 bg-dark-950 border-dark-800 text-white focus-visible:ring-gold-500/50 focus-visible:border-gold-500 placeholder:text-dark-600 rounded-xl px-4 text-base transition-all" 
+                          className="h-12 bg-background border-border text-foreground focus-visible:ring-gold-500/50 focus-visible:border-gold-500 placeholder:text-dark-600 rounded-xl px-4 text-base transition-all" 
                           {...field} 
                         />
                       </FormControl>
@@ -182,19 +182,19 @@ export default function LoginPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-dark-200 font-medium ml-1">Password</FormLabel>
+                      <FormLabel className="text-foreground font-medium ml-1">Password</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input 
                             type={showPassword ? "text" : "password"} 
                             placeholder="••••••••" 
-                            className="h-12 bg-dark-950 border-dark-800 text-white focus-visible:ring-gold-500/50 focus-visible:border-gold-500 placeholder:text-dark-600 rounded-xl px-4 pr-12 text-base transition-all" 
+                            className="h-12 bg-background border-border text-foreground focus-visible:ring-gold-500/50 focus-visible:border-gold-500 placeholder:text-dark-600 rounded-xl px-4 pr-12 text-base transition-all" 
                             {...field} 
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-dark-400 hover:text-gold-500 transition-colors"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gold-500 transition-colors"
                           >
                             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                           </button>

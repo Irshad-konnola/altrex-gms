@@ -1,5 +1,7 @@
 // src/app/api/cron/update-statuses/route.ts
 import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { createClient } from '@supabase/supabase-js'
 
 // Initialize Admin Client to bypass RLS in background jobs

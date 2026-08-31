@@ -18,7 +18,7 @@ export function OverdueDuesPanel() {
   const { generateRazorpayLink } = usePaymentMutations()
   const [loadingId, setLoadingId] = useState<string | null>(null)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   const handleSendReminder = async (member: any) => {
     if (!member.phone) {
       toast.error("No phone number on file for this member")
@@ -66,7 +66,7 @@ export function OverdueDuesPanel() {
       if (!waResponse.ok) throw new Error("Failed to send WhatsApp message")
 
       toast.success(`Reminder sent to ${member.full_name}`)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     } catch (error: any) {
       console.error(error)
       toast.error(error.message || "Failed to send reminder")
@@ -76,9 +76,9 @@ export function OverdueDuesPanel() {
   }
 
   return (
-    <Card className="bg-dark-700 border-dark-600">
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-white text-lg">
+        <CardTitle className="flex items-center gap-2 text-foreground text-lg">
           <AlertCircle className="h-5 w-5 text-red-500" />
           Overdue Dues
         </CardTitle>
@@ -89,20 +89,20 @@ export function OverdueDuesPanel() {
             <Loader2 className="h-6 w-6 animate-spin text-gold-500" />
           </div>
         ) : !overdueMembers || overdueMembers.length === 0 ? (
-          <p className="text-dark-300 text-sm text-center py-4">No overdue members right now.</p>
+          <p className="text-muted-foreground text-sm text-center py-4">No overdue members right now.</p>
         ) : (
           <div className="space-y-4">
             {/* 🔴 FIX: Added ': any' to member below to clear the TypeScript 'never' error */}
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            { }
             {overdueMembers.map((member: any) => {
               const plan = member.current_memberships?.[0]?.membership_plans
               const endDate = member.current_memberships?.[0]?.end_date
               
               return (
-                <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-dark-800 border border-dark-600">
+                <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-muted border border-border">
                   <div className="space-y-1">
-                    <p className="font-medium text-white text-sm">{member.full_name}</p>
-                    <p className="text-xs text-dark-300">
+                    <p className="font-medium text-foreground text-sm">{member.full_name}</p>
+                    <p className="text-xs text-muted-foreground">
                       Expired: {endDate ? format(parseISO(endDate), 'MMM dd') : 'Unknown'}
                     </p>
                   </div>

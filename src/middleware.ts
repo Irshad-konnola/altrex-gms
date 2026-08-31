@@ -1,5 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 
 const OWNER_ONLY_PATHS = [
   '/dashboard',
@@ -10,8 +12,38 @@ const OWNER_ONLY_PATHS = [
   '/pt/packages',
 ]
 
+// Initialize Rate Limiter if Upstash is configured
+const redis = process.env.UPSTASH_REDIS_REST_URL ? new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+}) : null;
+
+const apiLimiter = redis ? new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, '1 m'), // 20 requests per minute
+}) : null;
+
 export async function middleware(request: NextRequest) {
-if (
+  // Rate Limit specific sensitive API routes
+  if (request.nextUrl.pathname.startsWith('/api/whatsapp') || request.nextUrl.pathname.startsWith('/api/payments/create-link')) {
+    if (apiLimiter) {
+      const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1'
+      const { success, limit, remaining, reset } = await apiLimiter.limit(ip)
+      if (!success) {
+        return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Reset': reset.toString(),
+          }
+        })
+      }
+    }
+  }
+
+  // Bypass Auth for Webhooks and Cron
+  if (
     request.nextUrl.pathname.startsWith('/api/cron') ||
     request.nextUrl.pathname.startsWith('/api/payments/webhook') ||
     request.nextUrl.pathname.startsWith('/api/whatsapp/webhook') ||
@@ -45,38 +77,29 @@ if (
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+  const isAuthPath = request.nextUrl.pathname === '/login'
 
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login')
-  const isProtectedPath = request.nextUrl.pathname !== '/' && !isAuthPage && !request.nextUrl.pathname.startsWith('/api/device')
-
-  // 1. If not logged in and trying to access a protected route, redirect to login
-  if (!user && isProtectedPath) {
+  if (!user && !isAuthPath) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // 2. If logged in and trying to hit the login page, redirect to their home
-  if (user && isAuthPage) {
+  if (user && isAuthPath) {
     const role = user.user_metadata?.role
     const url = request.nextUrl.clone()
     url.pathname = role === 'owner' ? '/dashboard' : '/attendance'
     return NextResponse.redirect(url)
   }
 
-  // 3. Role-based access control (RBAC)
-  if (user && isProtectedPath) {
+  if (user) {
     const role = user.user_metadata?.role
-    
-    // Check if a front_desk user is trying to access an owner-only path
+
     const isOwnerPath = OWNER_ONLY_PATHS.some(path => request.nextUrl.pathname.startsWith(path))
-    
-    if (role === 'front_desk' && isOwnerPath) {
+    if (isOwnerPath && role !== 'owner') {
       const url = request.nextUrl.clone()
-      url.pathname = '/attendance' // Redirect unauthorized front desk to attendance
+      url.pathname = '/attendance'
       return NextResponse.redirect(url)
     }
   }
@@ -86,13 +109,7 @@ if (
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
+

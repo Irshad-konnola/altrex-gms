@@ -19,11 +19,11 @@ export function StatCard({ title, value = 0, type = 'number', isLoading, icon, t
   const isPositive = trend && trend > 0
 
   return (
-    <Card className="bg-dark-700 border-none shadow-xl shadow-black/40">
+    <Card className="bg-card border-none shadow-xl shadow-black/40">
       <CardContent className="p-5 flex flex-col justify-between h-full">
         {/* Header Row: Title + Icon */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-dark-300">
+          <div className="flex items-center gap-2 text-muted-foreground">
             {icon}
             <h3 className="text-xs font-semibold tracking-wider uppercase">{title}</h3>
           </div>
@@ -42,12 +42,12 @@ export function StatCard({ title, value = 0, type = 'number', isLoading, icon, t
         {/* Value + Subtext */}
         <div>
           {isLoading ? (
-            <Skeleton className="h-8 w-24 bg-dark-600 mb-1" />
+            <Skeleton className="h-8 w-24 bg-muted mb-1" />
           ) : (
-            <div className="text-3xl font-bold text-white tracking-tight">{displayValue}</div>
+            <div className="text-3xl font-bold text-foreground tracking-tight">{displayValue}</div>
           )}
           
-          <p className="text-xs text-dark-400 mt-1 min-h-[16px]">
+          <p className="text-xs text-muted-foreground mt-1 min-h-[16px]">
             {subtext}
           </p>
         </div>

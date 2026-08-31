@@ -1,5 +1,7 @@
 // src/app/api/settings/whatsapp-rules/route.ts
 import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET() {
@@ -7,7 +9,7 @@ export async function GET() {
     const supabase = await createClient()
     
     // Bypass strict typing until Database types are generated
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     const db = supabase as any;
 
     const { data, error } = await db
@@ -50,7 +52,7 @@ export async function PATCH(request: Request) {
     const rules = await request.json()
 
     // Bypass strict typing
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     const db = supabase as any;
 
     // Get the first settings row ID

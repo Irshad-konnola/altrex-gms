@@ -7,10 +7,12 @@ import { DashboardFilter } from './DashboardFilter'
 import { LiveFeed } from './LiveFeed'
 import { ExpiringPanel } from './ExpiringPanel'
 import { InactivePanel } from './InactivePanel'
-import { RevenueChart } from './RevenueChart'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Plus, Users, UserCheck, Clock, IndianRupee } from 'lucide-react'
 import Link from 'next/link'
+
+const RevenueChart = dynamic(() => import('./RevenueChart').then(mod => mod.RevenueChart), { ssr: false })
 
 export function DashboardClient() {
   const [dateRange, setDateRange] = useState<DateRange>('month')
@@ -22,7 +24,7 @@ export function DashboardClient() {
       {/* Header and Filter */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
             Good morning, <span className="bg-gradient-to-r from-gold-300 to-gold-600 bg-clip-text text-transparent">Owner</span>
           </h1>
         </div>

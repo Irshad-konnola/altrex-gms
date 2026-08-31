@@ -40,10 +40,10 @@ export function AttendanceStats() {
   if (loading || !stats) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6 h-48 flex items-center justify-center">
+        <div className="bg-muted border border-border rounded-xl p-6 h-48 flex items-center justify-center">
           <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
         </div>
-        <div className="bg-dark-800 border border-dark-600 rounded-xl p-6 h-64" />
+        <div className="bg-muted border border-border rounded-xl p-6 h-64" />
       </div>
     )
   }
@@ -51,31 +51,31 @@ export function AttendanceStats() {
   return (
     <div className="space-y-6">
       {/* Today's Overview Widget */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl p-6 shadow-sm">
-        <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider text-dark-300">
+      <div className="bg-muted border border-border rounded-xl p-6 shadow-sm">
+        <h3 className="text-foreground font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">
           Today&apos;s Overview
         </h3>
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-3 bg-dark-900/50 rounded-lg border border-dark-700/50">
-            <div className="flex items-center gap-3 text-dark-200">
+          <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg border border-border/50">
+            <div className="flex items-center gap-3 text-foreground">
               <Users className="w-5 h-5 text-gold-500" />
               <span className="font-medium">Total Footfall</span>
             </div>
-            <span className="text-xl font-bold text-white">{stats.totalFootfall}</span>
+            <span className="text-xl font-bold text-foreground">{stats.totalFootfall}</span>
           </div>
-          <div className="flex items-center justify-between p-3 bg-dark-900/50 rounded-lg border border-dark-700/50">
-            <div className="flex items-center gap-3 text-dark-200">
+          <div className="flex items-center justify-between p-3 bg-card/50 rounded-lg border border-border/50">
+            <div className="flex items-center gap-3 text-foreground">
               <Clock className="w-5 h-5 text-gold-500" />
               <span className="font-medium">Peak Hour</span>
             </div>
-            <span className="text-xl font-bold text-white">{stats.peakHour}</span>
+            <span className="text-xl font-bold text-foreground">{stats.peakHour}</span>
           </div>
         </div>
       </div>
 
       {/* Hourly Chart */}
-      <div className="bg-dark-800 border border-dark-600 rounded-xl p-6 shadow-sm">
-        <h3 className="text-white font-semibold mb-6 text-sm uppercase tracking-wider text-dark-300">
+      <div className="bg-muted border border-border rounded-xl p-6 shadow-sm">
+        <h3 className="text-foreground font-semibold mb-6 text-sm uppercase tracking-wider text-muted-foreground">
           Check-in Distribution
         </h3>
         <div className="h-64 w-full">

@@ -1,0 +1,21 @@
+{
+  "name": "Altrex Gym Management System",
+  "short_name": "Altrex GMS",
+  "description": "Advanced AI-assisted operating system for Altrex Fitness",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#eab308",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}

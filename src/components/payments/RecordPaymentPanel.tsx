@@ -42,7 +42,14 @@ const [modalData, setModalData] = useState<{ url: string; phone?: string; member
   const [reference, setReference] = useState("");
   const [sendReceipt, setSendReceipt] = useState(true);
   
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const filteredMembers = members?.filter((m) => 
+    m.full_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (m.phone && m.phone.includes(searchQuery))
+  );
 
   useEffect(() => {
     async function fetchMemberDues() {
@@ -53,16 +60,21 @@ const [modalData, setModalData] = useState<{ url: string; phone?: string; member
       
       const { data: payData } = await supabase.from('payments').select('amount').eq('member_id', memberId);
       const { data: memData } = await supabase.from('memberships').select('membership_plans(price)').eq('member_id', memberId);
+      const { data: ptData } = await supabase.from('pt_assignments').select('pt_packages(price)').eq('member_id', memberId);
 
       let totalPaid = 0;
-      // 🌟 FIXED TS ERROR: Explicitly typed 'p' as 'any' to bypass the 'never' array restriction
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       payData?.forEach((p: any) => totalPaid += Number(p.amount));
 
       let totalBilled = 0;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
       memData?.forEach((m: any) => {
         const price = Array.isArray(m.membership_plans) ? m.membership_plans[0]?.price : m.membership_plans?.price;
+        totalBilled += Number(price || 0);
+      });
+      
+      ptData?.forEach((pt: any) => {
+        const price = Array.isArray(pt.pt_packages) ? pt.pt_packages[0]?.price : pt.pt_packages?.price;
         totalBilled += Number(price || 0);
       });
 
@@ -131,6 +143,7 @@ const [modalData, setModalData] = useState<{ url: string; phone?: string; member
 setModalData({ url: shortUrl, phone: selectedMember?.phone, memberId: memberId });              
               // Reset Form 
               setMemberId("");
+              setSearchQuery("");
               setPlanId("");
               setAmount("");
               setMethod("upi");
@@ -139,7 +152,7 @@ setModalData({ url: shortUrl, phone: selectedMember?.phone, memberId: memberId }
               setMemberDues(0);
               setIsSubmitting(false);
             },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            
             onError: (err: any) => {
               toast.error(err.message || "Failed to generate link");
               setIsSubmitting(false);
@@ -158,10 +171,10 @@ setModalData({ url: shortUrl, phone: selectedMember?.phone, memberId: memberId }
       });
 
       if (result.success) {
-        if (sendReceipt) toast.success("WhatsApp receipt queued");
-        toast.success("Payment recorded successfully!");
+        toast.success(sendReceipt ? "Payment recorded & Receipt sent via WhatsApp" : "Payment recorded successfully");
         
         setMemberId("");
+        setSearchQuery("");
         setPlanId("");
         setAmount("");
         setMethod("upi");
@@ -182,9 +195,9 @@ setModalData({ url: shortUrl, phone: selectedMember?.phone, memberId: memberId }
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="bg-dark-800 border-l border-dark-600 sm:max-w-lg w-full overflow-y-auto shadow-2xl">
+      <SheetContent className="bg-background border-l border-border sm:max-w-lg w-full overflow-y-auto shadow-2xl p-6 sm:p-8">
         <SheetHeader className="mb-8 mt-2">
-          <SheetTitle className="text-2xl font-bold text-white flex items-center gap-2">
+          <SheetTitle className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Receipt className="h-6 w-6 text-gold-500" />
             Record Payment
           </SheetTitle>
@@ -193,19 +206,40 @@ setModalData({ url: shortUrl, phone: selectedMember?.phone, memberId: memberId }
         <form onSubmit={onSubmit} className="space-y-8">
           <div className="space-y-6">
             
-            <div className="space-y-2">
-              <label className="text-dark-300 uppercase text-xs tracking-wider font-semibold">Select Member *</label>
-              <select 
-                value={memberId} 
-                onChange={(e) => setMemberId(e.target.value)}
-                className="w-full bg-dark-900 border border-dark-600 text-white focus:ring-2 focus:ring-gold-500 rounded-xl h-11 px-3"
-                required
-              >
-                <option value="" disabled>{isLoadingMembers ? "Loading..." : "Search members..."}</option>
-                {members?.map((m) => (
-                  <option key={m.id} value={m.id}>{m.full_name} {m.phone && `(${m.phone})`}</option>
-                ))}
-              </select>
+            <div className="space-y-2 relative">
+              <label className="text-muted-foreground uppercase text-xs tracking-wider font-semibold">Select Member *</label>
+              <div className="relative">
+                <Input 
+                  placeholder={isLoadingMembers ? "Loading..." : "Search members..."}
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setIsDropdownOpen(true);
+                  }}
+                  onClick={() => setIsDropdownOpen(true)}
+                  onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+                  className="w-full bg-card border border-border text-foreground focus:ring-2 focus:ring-gold-500 rounded-xl h-11 px-3"
+                />
+                {isDropdownOpen && filteredMembers && filteredMembers.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                    {filteredMembers.map((m) => (
+                      <div 
+                        key={m.id} 
+                        className="px-4 py-2 hover:bg-muted cursor-pointer text-sm text-foreground flex flex-col"
+                        onMouseDown={(e) => {
+                          e.preventDefault(); // Prevent input onBlur
+                          setMemberId(m.id);
+                          setSearchQuery(`${m.full_name} ${m.phone ? `(${m.phone})` : ''}`);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        <span className="font-semibold">{m.full_name}</span>
+                        <span className="text-xs text-muted-foreground">{m.phone}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {memberDues > 0 && (
@@ -216,11 +250,11 @@ setModalData({ url: shortUrl, phone: selectedMember?.phone, memberId: memberId }
             )}
 
             <div className="space-y-2">
-              <label className="text-dark-300 uppercase text-xs tracking-wider font-semibold">Payment Purpose</label>
+              <label className="text-muted-foreground uppercase text-xs tracking-wider font-semibold">Payment Purpose</label>
               <select 
                 value={purpose} 
                 onChange={handlePurposeChange}
-                className="w-full bg-dark-900 border border-dark-600 text-white focus:ring-2 focus:ring-gold-500 rounded-xl h-11 px-3"
+                className="w-full bg-card border border-border text-foreground focus:ring-2 focus:ring-gold-500 rounded-xl h-11 px-3"
               >
                 <option value="plan">Buying a Membership Plan</option>
                 <option value="due">Clearing Pending Dues / Custom Payment</option>
@@ -229,11 +263,11 @@ setModalData({ url: shortUrl, phone: selectedMember?.phone, memberId: memberId }
 
             {purpose === "plan" ? (
               <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                <label className="text-dark-300 uppercase text-xs tracking-wider font-semibold">Select Plan *</label>
+                <label className="text-muted-foreground uppercase text-xs tracking-wider font-semibold">Select Plan *</label>
                 <select 
                   value={planId} 
                   onChange={handlePlanSelect}
-                  className="w-full bg-dark-900 border border-dark-600 text-white focus:ring-2 focus:ring-gold-500 rounded-xl h-11 px-3"
+                  className="w-full bg-card border border-border text-foreground focus:ring-2 focus:ring-gold-500 rounded-xl h-11 px-3"
                   required
                 >
                   <option value="" disabled>{isLoadingPlans ? "Loading..." : "Choose a plan..."}</option>
@@ -244,11 +278,11 @@ setModalData({ url: shortUrl, phone: selectedMember?.phone, memberId: memberId }
               </div>
             ) : (
               <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                <label className="text-dark-300 uppercase text-xs tracking-wider font-semibold">Payment Description *</label>
+                <label className="text-muted-foreground uppercase text-xs tracking-wider font-semibold">Payment Description *</label>
                 <Input 
                   value={customDescription} 
                   onChange={(e) => setCustomDescription(e.target.value)}
-                  className="bg-dark-900 border-dark-600 text-white h-11 rounded-xl"
+                  className="bg-card border-border text-foreground h-11 rounded-xl"
                   required
                 />
               </div>
@@ -256,22 +290,22 @@ setModalData({ url: shortUrl, phone: selectedMember?.phone, memberId: memberId }
 
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-dark-300 uppercase text-xs tracking-wider font-semibold">Amount (₹) *</label>
+                <label className="text-muted-foreground uppercase text-xs tracking-wider font-semibold">Amount (₹) *</label>
                 <Input 
                   type="number" 
                   value={amount} 
                   onChange={(e) => setAmount(e.target.value)}
-                  className="bg-dark-900 border-dark-600 text-white focus:border-gold-500 font-medium text-lg h-11 rounded-xl"
+                  className="bg-card border-border text-foreground focus:border-gold-500 font-medium text-lg h-11 rounded-xl"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-dark-300 uppercase text-xs tracking-wider font-semibold">Payment Method</label>
+                <label className="text-muted-foreground uppercase text-xs tracking-wider font-semibold">Payment Method</label>
                 <select 
                   value={method} 
                   onChange={(e) => setMethod(e.target.value)}
-                  className="w-full bg-dark-900 border border-dark-600 text-white focus:ring-2 focus:ring-gold-500 rounded-xl h-11 px-3"
+                  className="w-full bg-card border border-border text-foreground focus:ring-2 focus:ring-gold-500 rounded-xl h-11 px-3"
                 >
                   <option value="cash">Cash</option>
                   <option value="upi">UPI</option>
@@ -283,30 +317,30 @@ setModalData({ url: shortUrl, phone: selectedMember?.phone, memberId: memberId }
 
             {method === "upi" && (
               <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                <label className="text-dark-300 uppercase text-xs tracking-wider font-semibold">UTR / Reference Number</label>
+                <label className="text-muted-foreground uppercase text-xs tracking-wider font-semibold">UTR / Reference Number</label>
                 <Input 
                   value={reference} 
                   onChange={(e) => setReference(e.target.value)}
                   placeholder="Enter UPI reference" 
-                  className="bg-dark-900 border-dark-600 text-white focus:border-gold-500 h-11 rounded-xl" 
+                  className="bg-card border-border text-foreground focus:border-gold-500 h-11 rounded-xl" 
                 />
               </div>
             )}
           </div>
 
-          <div className="flex flex-row items-center justify-between rounded-xl border border-dark-600/60 p-5 bg-dark-900/50 shadow-inner">
+          <div className="flex flex-row items-center justify-between rounded-xl border border-border/60 p-5 bg-card/50 shadow-inner">
             <div className="space-y-1">
-              <label className="text-base font-semibold text-white">WhatsApp Receipt</label>
-              <p className="text-xs text-dark-400">Instantly send a payment confirmation to the member.</p>
+              <label className="text-base font-semibold text-foreground">WhatsApp Receipt</label>
+              <p className="text-xs text-muted-foreground">Instantly send a payment confirmation to the member.</p>
             </div>
             <Switch checked={sendReceipt} onCheckedChange={setSendReceipt} className="data-[state=checked]:bg-gold-500 ml-4" />
           </div>
 
           <div className="pt-8 flex justify-end gap-4">
-            <Button type="button" variant="ghost" onClick={onClose} className="text-dark-300 hover:text-white px-6">
+            <Button type="button" variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-foreground px-6">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || generateRazorpayLink.isPending} className="bg-gold-500 text-dark-900 hover:bg-gold-600 font-bold px-8 shadow-[0_0_15px_rgba(234,179,8,0.2)] rounded-xl">
+            <Button type="submit" disabled={isSubmitting || generateRazorpayLink.isPending} className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-8 shadow-[0_0_15px_rgba(234,179,8,0.2)] rounded-xl">
               {isSubmitting || generateRazorpayLink.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : method === "razorpay" ? (

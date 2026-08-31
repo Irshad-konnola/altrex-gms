@@ -18,13 +18,24 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-export function RenewPlanModal({ memberId, memberPhone, memberName }: { memberId: string, memberPhone?: string, memberName?: string }) {
+export function RenewPlanModal({ 
+  memberId, 
+  memberPhone, 
+  memberName,
+  currentEndDate
+}: { 
+  memberId: string, 
+  memberPhone?: string, 
+  memberName?: string,
+  currentEndDate?: string
+}) {
   const [isOpen, setIsOpen] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   const [plans, setPlans] = useState<any[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const [planId, setPlanId] = useState("")
+  const [startDate, setStartDate] = useState(currentEndDate && currentEndDate !== "No active plan" && new Date(currentEndDate) >= new Date() ? currentEndDate : new Date().toISOString().split("T")[0])
   const [amount, setAmount] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("upi")
   const [reference, setReference] = useState("")
@@ -68,6 +79,7 @@ export function RenewPlanModal({ memberId, memberPhone, memberName }: { memberId
             planName: `Renewal: ${selectedPlan?.name}`,
             planId: planId,
             purpose: "renewal", // 🌟 TELLS WEBHOOK TO APPEND DATES
+            startDate: startDate,
           },
           {
             onSuccess: (shortUrl) => {
@@ -77,7 +89,7 @@ export function RenewPlanModal({ memberId, memberPhone, memberName }: { memberId
               setAmount("")
               setPaymentMethod("upi")
             },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            
             onError: (err: any) => {
               toast.error(err.message || "Failed to generate link")
             }
@@ -88,7 +100,7 @@ export function RenewPlanModal({ memberId, memberPhone, memberName }: { memberId
       }
 
       // Standard Cash/UPI Action
-      const result = await renewMembershipAction(memberId, { planId, amount, paymentMethod, reference })
+      const result = await renewMembershipAction(memberId, { planId, amount, paymentMethod, reference, startDate })
       if (result.success) {
         toast.success("Plan renewed successfully!")
         setIsOpen(false)
@@ -110,18 +122,18 @@ export function RenewPlanModal({ memberId, memberPhone, memberName }: { memberId
           Renew Plan
         </DialogTrigger>
         
-        <DialogContent className="bg-dark-950 border border-dark-800 text-white sm:max-w-[425px] rounded-2xl">
+        <DialogContent className="bg-background border border-border text-foreground sm:max-w-[425px] rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-tight">Renew Membership</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-dark-200">Select New Plan</label>
+              <label className="text-sm font-medium text-foreground">Select New Plan</label>
               <select 
                 value={planId}
                 onChange={handlePlanSelect}
-                className="flex h-11 w-full rounded-xl border border-dark-700 bg-dark-900 px-3 text-sm text-white focus:ring-2 focus:ring-gold-500/50"
+                className="flex h-11 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground focus:ring-2 focus:ring-gold-500/50"
                 required
               >
                 <option value="" disabled>Select a plan...</option>
@@ -132,22 +144,33 @@ export function RenewPlanModal({ memberId, memberPhone, memberName }: { memberId
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-dark-200">Amount Received (₹)</label>
+              <label className="text-sm font-medium text-foreground">Start Date</label>
               <Input 
-                type="number" 
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="bg-dark-900 border-dark-700 text-gold-500 font-bold h-11"
+                type="date" 
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="bg-card border-border text-foreground scheme-dark h-11"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-dark-200">Payment Method</label>
+              <label className="text-sm font-medium text-foreground">Amount Received (₹)</label>
+              <Input 
+                type="number" 
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="bg-card border-border text-gold-500 font-bold h-11"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Payment Method</label>
               <select 
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
-                className="flex h-11 w-full rounded-xl border border-dark-700 bg-dark-900 px-3 text-sm text-white"
+                className="flex h-11 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground"
               >
                 <option value="upi">UPI</option>
                 <option value="cash">Cash</option>
@@ -158,12 +181,12 @@ export function RenewPlanModal({ memberId, memberPhone, memberName }: { memberId
 
             {paymentMethod === "upi" && (
               <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                <label className="text-sm font-medium text-dark-200">UTR / Reference Number</label>
+                <label className="text-sm font-medium text-foreground">UTR / Reference Number</label>
                 <Input 
                   value={reference} 
                   onChange={(e) => setReference(e.target.value)}
                   placeholder="Enter UPI reference" 
-                  className="bg-dark-900 border-dark-700 text-white h-11" 
+                  className="bg-card border-border text-foreground h-11" 
                 />
               </div>
             )}

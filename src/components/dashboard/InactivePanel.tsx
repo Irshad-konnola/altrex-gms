@@ -15,9 +15,9 @@ export function InactivePanel() {
   }
 
   return (
-    <Card className="bg-dark-700 border-dark-600 rounded-xl">
-      <CardHeader className="pb-3 border-b border-dark-600">
-        <CardTitle className="text-sm font-semibold text-white">
+    <Card className="bg-card border-border rounded-xl">
+      <CardHeader className="pb-3 border-b border-border">
+        <CardTitle className="text-sm font-semibold text-foreground">
           Inactive 3+ Days
         </CardTitle>
       </CardHeader>
@@ -27,14 +27,14 @@ export function InactivePanel() {
             <Loader2 className="h-5 w-5 animate-spin text-gold-500" />
           </div>
         ) : !data?.inactive.length ? (
-          <p className="text-xs text-dark-400 py-2">All active members seen recently.</p>
+          <p className="text-xs text-muted-foreground py-2">All active members seen recently.</p>
         ) : (
           <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
             {data.inactive.map((member) => (
-              <div key={member.id} className="flex items-center justify-between text-xs bg-dark-800 p-2.5 rounded-lg border border-dark-600">
+              <div key={member.id} className="flex items-center justify-between text-xs bg-muted p-2.5 rounded-lg border border-border">
                 <div className="min-w-0">
-                  <p className="text-white font-medium truncate">{member.full_name}</p>
-                  <p className="text-dark-300 mt-0.5">Absent since last week</p>
+                  <p className="text-foreground font-medium truncate">{member.full_name}</p>
+                  <p className="text-muted-foreground mt-0.5">Absent since last week</p>
                 </div>
                 <Button 
                   size="sm" 

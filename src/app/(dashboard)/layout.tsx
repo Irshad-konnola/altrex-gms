@@ -19,7 +19,7 @@ export default async function DashboardLayout({
   const userRole = user.user_metadata?.role || "front_desk"
 
   return (
-    <div className="min-h-screen bg-dark-900 text-dark-50 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-card text-foreground flex flex-col md:flex-row">
       <Sidebar userRole={userRole} />
       
       <div className="flex-1 lg:pl-60 flex flex-col min-h-screen pb-16 lg:pb-0">

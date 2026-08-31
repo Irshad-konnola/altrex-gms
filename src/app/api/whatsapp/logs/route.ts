@@ -1,5 +1,7 @@
 // src/app/api/whatsapp/logs/route.ts
 import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET() {
@@ -7,7 +9,7 @@ export async function GET() {
     const supabase = await createClient()
     
     // Bypass strict typing until Database types are generated
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     const db = supabase as any;
 
     // Fetch the recent 50 messages, joining with the members table to get the name

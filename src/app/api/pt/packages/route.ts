@@ -1,11 +1,13 @@
 // src/app/api/pt/packages/route.ts
 import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET() {
   try {
     const supabase = await createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     const db = supabase as any
 
     const { data, error } = await db
@@ -24,7 +26,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     const db = supabase as any
     
     const body = await request.json()

@@ -7,7 +7,7 @@ import { sendTemplateMessage } from '@/lib/whatsapp/client'
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     const db = supabase as any
     
     const body = await request.json()
@@ -38,6 +38,23 @@ export async function POST(request: Request) {
     // 2. Calculate end date
     const endDate = format(addDays(new Date(start_date), pkg.validity_days), 'yyyy-MM-dd')
 
+    // 2.5 Ensure the member has an active common plan that covers this PT period
+    const { data: memberships } = await db
+      .from('memberships')
+      .select('end_date')
+      .eq('member_id', member_id)
+      .eq('status', 'active')
+      .order('end_date', { ascending: false })
+      .limit(1)
+      
+    if (!memberships || memberships.length === 0) {
+      throw new Error("Member must have an active regular plan to be assigned a PT package.")
+    }
+    
+    if (new Date(endDate) > new Date(memberships[0].end_date)) {
+      throw new Error(`The PT package validity (${endDate}) exceeds their regular plan validity (${memberships[0].end_date}). Please renew their regular plan first.`)
+    }
+
     // 3. Create the assignment
     const { data: assignment, error: assignError } = await db
       .from('pt_assignments')
@@ -59,6 +76,20 @@ export async function POST(request: Request) {
 
     // 4. Update the member to flag them as a PT member
     await db.from('members').update({ is_pt_member: true }).eq('id', member_id)
+
+    // NEW: Log partial or full payment if provided
+    const { amount_paid, payment_method } = body
+    if (amount_paid && Number(amount_paid) > 0) {
+      const { data: { user } } = await supabase.auth.getUser()
+      await db.from('payments').insert({
+        member_id,
+        amount: Number(amount_paid),
+        method: payment_method || 'cash',
+        status: 'paid',
+        description: `PT Package: ${pkg.name}`,
+        recorded_by: user?.id
+      })
+    }
 
     // 5. 🌟 WHATSAPP TRIGGER: PT Assigned
     if (member.phone) {

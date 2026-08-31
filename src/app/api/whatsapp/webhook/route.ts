@@ -1,5 +1,7 @@
 // src/app/api/whatsapp/webhook/route.ts
 import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { createClient } from '@supabase/supabase-js'
 import { format } from 'date-fns'
 
@@ -35,7 +37,7 @@ export async function POST(request: Request) {
     const fromPhone = message.from
     const text = message.text.body.trim().toLowerCase()
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     const db = supabaseAdmin as any;
 
     const phoneToSearch = fromPhone.length > 10 ? fromPhone.slice(-10) : fromPhone

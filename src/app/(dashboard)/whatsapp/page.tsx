@@ -14,7 +14,7 @@ const CustomToggle = ({ checked, onChange }: { checked: boolean; onChange: () =>
     aria-checked={checked}
     onClick={onChange}
     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-900 ${
-      checked ? 'bg-gold-500' : 'bg-dark-600'
+      checked ? 'bg-gold-500' : 'bg-muted'
     }`}
   >
     <span
@@ -89,19 +89,19 @@ export default function WhatsAppPage() {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <MessageCircle className="w-6 h-6 text-green-500" />
             WhatsApp Automations
           </h1>
-          <p className="text-dark-300 text-sm mt-1">Manage bots, message rules, and view chat logs.</p>
+          <p className="text-muted-foreground text-sm mt-1">Manage bots, message rules, and view chat logs.</p>
         </div>
         
-        <div className="flex items-center gap-2 bg-dark-800 border border-dark-600 px-4 py-2 rounded-lg">
+        <div className="flex items-center gap-2 bg-muted border border-border px-4 py-2 rounded-lg">
           <span className="relative flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
           </span>
-          <span className="text-sm font-medium text-white">Meta API Connected</span>
+          <span className="text-sm font-medium text-foreground">Meta API Connected</span>
         </div>
       </div>
 
@@ -109,10 +109,10 @@ export default function WhatsAppPage() {
         
         {/* Left Column: Automation Rules */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-dark-600 bg-dark-900/50 flex items-center gap-2">
+          <div className="bg-muted border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-border bg-card/50 flex items-center gap-2">
               <Zap className="w-4 h-4 text-gold-500" />
-              <h2 className="font-semibold text-white">Active Rules</h2>
+              <h2 className="font-semibold text-foreground">Active Rules</h2>
             </div>
             {/* 🌟 FIX: Added height and scroll behavior here to handle the longer list */}
             <div className="divide-y divide-dark-600/50 h-[600px] overflow-y-auto no-scrollbar">
@@ -120,11 +120,11 @@ export default function WhatsAppPage() {
                 <div className="p-8 flex justify-center"><Loader2 className="w-6 h-6 text-gold-500 animate-spin" /></div>
               ) : (
                 automationRules.map((rule) => (
-                  <div key={rule.key} className="p-4 flex items-center justify-between hover:bg-dark-700/30 transition-colors">
+                  <div key={rule.key} className="p-4 flex items-center justify-between hover:bg-card/30 transition-colors">
                     <div>
-                      <h3 className="text-sm font-medium text-white">{rule.label}</h3>
-                      <p className="text-xs text-dark-400 mt-1">{rule.timing}</p>
-                      <span className="inline-block mt-2 text-[10px] uppercase tracking-wider font-bold bg-dark-700 text-dark-300 px-2 py-0.5 rounded-full">
+                      <h3 className="text-sm font-medium text-foreground">{rule.label}</h3>
+                      <p className="text-xs text-muted-foreground mt-1">{rule.timing}</p>
+                      <span className="inline-block mt-2 text-[10px] uppercase tracking-wider font-bold bg-card text-muted-foreground px-2 py-0.5 rounded-full">
                         {rule.category}
                       </span>
                     </div>
@@ -141,13 +141,13 @@ export default function WhatsAppPage() {
 
         {/* Right Column: Message Logs */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden shadow-sm flex flex-col h-[650px]">
-            <div className="p-4 border-b border-dark-600 bg-dark-900/50 flex items-center justify-between">
+          <div className="bg-muted border border-border rounded-xl overflow-hidden shadow-sm flex flex-col h-[650px]">
+            <div className="p-4 border-b border-border bg-card/50 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-gold-500" />
-                <h2 className="font-semibold text-white">Recent Messages</h2>
+                <h2 className="font-semibold text-foreground">Recent Messages</h2>
               </div>
-              <span className="text-xs text-dark-400 font-medium bg-dark-700 px-2 py-1 rounded-md">
+              <span className="text-xs text-muted-foreground font-medium bg-card px-2 py-1 rounded-md">
                 Last 50
               </span>
             </div>

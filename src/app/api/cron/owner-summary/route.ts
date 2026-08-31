@@ -1,5 +1,7 @@
 // src/app/api/cron/owner-summary/route.ts
 import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 import { createClient } from '@supabase/supabase-js'
 import { startOfDay, endOfDay, format, addDays } from 'date-fns'
 import { sendTemplateMessage } from '@/lib/whatsapp/client'
@@ -73,7 +75,7 @@ export async function GET(request: Request) {
     })
 
     return NextResponse.json({ success: true })
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   } catch (error: any) {
     console.error('Error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
