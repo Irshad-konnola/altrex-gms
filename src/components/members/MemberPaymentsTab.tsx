@@ -3,44 +3,28 @@
 import { useState, useEffect } from "react"
 import { IndianRupee, AlertCircle, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { createClient } from "@/lib/supabase/client"
+import { getMemberPaymentsData } from "@/app/(dashboard)/payments/actions"
 
 export function MemberPaymentsTab({ memberId }: { memberId: string }) {
   
   const [payments, setPayments] = useState<any[]>([])
   const [lifetimeBilled, setLifetimeBilled] = useState(0)
   const [loading, setLoading] = useState(true)
-  
-  const supabase = createClient()
 
   useEffect(() => {
     const fetchData = async () => {
-      
-      const { data: payData }: any = await supabase
-        .from('payments')
-        .select('*')
-        .eq('member_id', memberId)
-        .order('created_at', { ascending: false })
+      const { payData, memData, ptData } = await getMemberPaymentsData(memberId)
       
       if (payData) setPayments(payData)
-      const { data: memData }: any = await supabase
-        .from('memberships')
-        .select('status, membership_plans(price)')
-        .eq('member_id', memberId)
-
-      const { data: ptData }: any = await supabase
-        .from('pt_assignments')
-        .select('pt_packages(price)')
-        .eq('member_id', memberId)
-
+      
       let totalCost = 0
       if (memData) {
         memData.forEach((m: any) => {
           const priceData = m.membership_plans
           if (Array.isArray(priceData)) {
-            totalCost += (priceData[0]?.price || 0)
+            totalCost += Number(priceData[0]?.price || 0)
           } else if (priceData?.price) {
-            totalCost += priceData.price
+            totalCost += Number(priceData.price)
           }
         })
       }
@@ -49,9 +33,9 @@ export function MemberPaymentsTab({ memberId }: { memberId: string }) {
         ptData.forEach((pt: any) => {
           const priceData = pt.pt_packages
           if (Array.isArray(priceData)) {
-            totalCost += (priceData[0]?.price || 0)
+            totalCost += Number(priceData[0]?.price || 0)
           } else if (priceData?.price) {
-            totalCost += priceData.price
+            totalCost += Number(priceData.price)
           }
         })
       }
@@ -61,7 +45,7 @@ export function MemberPaymentsTab({ memberId }: { memberId: string }) {
     }
 
     fetchData()
-  }, [memberId, supabase])
+  }, [memberId])
 
   const totalPaid = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
   const dueAmount = Math.max(0, lifetimeBilled - totalPaid)

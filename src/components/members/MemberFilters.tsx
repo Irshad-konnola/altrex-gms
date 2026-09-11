@@ -88,9 +88,9 @@ export function MemberFilters({ initialSearch, activeTab, initialSort }: { initi
         ))}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-row gap-2 w-full lg:w-auto">
         {/* Interactive Sort */}
-        <div className="p-1 shrink-0">
+        <div className="shrink-0 py-1">
           <select 
             value={initialSort || ""}
             onChange={handleSortChange}
@@ -104,14 +104,14 @@ export function MemberFilters({ initialSearch, activeTab, initialSort }: { initi
         </div>
 
         {/* Interactive Search */}
-        <div className="relative w-full lg:w-64 shrink-0 p-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <div className="relative flex-1 lg:w-64 py-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
             type="text" 
             placeholder="Search..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-10 bg-card border-border text-foreground focus-visible:ring-gold-500/50 rounded-xl"
+            className="pl-9 h-10 w-full bg-card border-border text-foreground focus-visible:ring-gold-500/50 rounded-xl"
           />
         </div>
       </div>
