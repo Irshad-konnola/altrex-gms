@@ -1,6 +1,5 @@
-// src/hooks/usePayments.ts
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/client'
+import { getAllPayments } from '@/app/(dashboard)/payments/actions'
 
 export type PaymentWithDetails = {
   id: string
@@ -18,28 +17,10 @@ export type PaymentWithDetails = {
 }
 
 export function usePayments() {
-  const supabase = createClient()
-
   return useQuery({
     queryKey: ['payments'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('payments')
-        .select(`
-          id, member_id, amount, method, status, payment_date, created_at,description,
-          members:member_id (full_name, photo_url),
-          memberships:membership_id (
-            membership_plans:plan_id (name)
-          )
-        `)
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Supabase fetch error:', error)
-        throw new Error('Failed to fetch payments')
-      }
-
-      // 'unknown' is the TypeScript-safe way to override PostgREST types without triggering ESLint 'any' errors
+      const data = await getAllPayments()
       return data as unknown as PaymentWithDetails[]
     }
   })

@@ -111,16 +111,16 @@ export default function PTDashboardPage() {
             <tbody className="divide-y divide-dark-600/50">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-muted-foreground animate-pulse">
+                  <td colSpan={5} className="p-8 text-center text-muted-foreground animate-pulse whitespace-normal">
                     Loading PT data...
                   </td>
                 </tr>
               ) : filteredMembers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-12 text-center">
+                  <td colSpan={5} className="p-8 md:p-12 text-center whitespace-normal">
                     <Dumbbell className="w-10 h-10 text-dark-600 mx-auto mb-3" />
                     <h3 className="text-foreground font-medium mb-1">No Active Clients found</h3>
-                    <p className="text-muted-foreground text-sm">Assign packages to members via their profile.</p>
+                    <p className="text-muted-foreground text-sm max-w-[250px] mx-auto">Assign packages to members via their profile.</p>
                   </td>
                 </tr>
               ) : (
