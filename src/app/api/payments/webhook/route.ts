@@ -100,6 +100,14 @@ export async function POST(request: Request) {
           }
         }
 
+        // Check if this is their very first payment
+        const { count: priorPaymentsCount } = await supabaseAdmin
+          .from("payments")
+          .select('*', { count: 'exact', head: true })
+          .eq("member_id", memberId);
+
+        const isFirstPayment = priorPaymentsCount === 0;
+
         // 🌟 ALL SCENARIOS: Record the actual payment
         await supabaseAdmin.from("payments").insert([{
           member_id: memberId,
@@ -118,7 +126,7 @@ export async function POST(request: Request) {
           try {
             await sendTemplateMessage({
               to: member.phone,
-              templateName: 'payment_receipt',
+              templateName: isFirstPayment ? 'altrex_welcome' : 'payment_receipt',
               components: [{
                 type: 'body',
                 parameters: [

@@ -31,6 +31,14 @@ export function usePaymentMutations() {
         
       if (planError || !plan) throw new Error("Failed to fetch plan details");
       
+      // Check if this is the member's very first payment (for welcome message)
+      const { count: priorPaymentsCount } = await db
+        .from("payments")
+        .select('*', { count: 'exact', head: true })
+        .eq("member_id", values.member_id);
+        
+      const isFirstPayment = priorPaymentsCount === 0;
+
       const startDate = new Date();
       const endDate = addDays(startDate, plan.duration_days);
       
@@ -83,7 +91,7 @@ export function usePaymentMutations() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               to: values.memberPhone,
-              templateName: 'payment_receipt',
+              templateName: isFirstPayment ? 'altrex_welcome' : 'payment_receipt',
               components: [
                 {
                   type: 'body',
