@@ -1,0 +1,36 @@
+name: Daily Cron Jobs
+
+on:
+  schedule:
+    # 1. Update Statuses at 00:10 UTC (5:40 AM IST)
+    - cron: '10 0 * * *'
+    # 2. Renewal Reminders at 03:30 UTC (9:00 AM IST)
+    - cron: '30 3 * * *'
+    # 3. Inactivity Check at 04:00 UTC (9:30 AM IST)
+    - cron: '0 4 * * *'
+    # 4. Owner Summary at 16:00 UTC (9:30 PM IST)
+    - cron: '0 16 * * *'
+
+jobs:
+  run-crons:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Update Statuses
+        if: github.event.schedule == '10 0 * * *'
+        run: |
+          curl -X GET "${{ secrets.NETLIFY_URL }}/api/cron/update-statuses" -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Trigger Renewal Reminders
+        if: github.event.schedule == '30 3 * * *'
+        run: |
+          curl -X GET "${{ secrets.NETLIFY_URL }}/api/cron/renewal-reminders" -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Trigger Inactivity Check
+        if: github.event.schedule == '0 4 * * *'
+        run: |
+          curl -X GET "${{ secrets.NETLIFY_URL }}/api/cron/inactivity-check" -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+      - name: Trigger Owner Summary
+        if: github.event.schedule == '0 16 * * *'
+        run: |
+          curl -X GET "${{ secrets.NETLIFY_URL }}/api/cron/owner-summary" -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
