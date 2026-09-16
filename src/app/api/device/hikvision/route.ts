@@ -14,36 +14,29 @@ export async function POST(request: Request) {
 
     let eventData: any = null
 
-    // Hikvision often sends multipart/form-data containing JSON or XML
+    // Hikvision sends multipart/form-data containing JSON in 'AccessControllerEvent'
     if (contentType.includes('multipart/form-data')) {
-      const formData = await request.formData()
-      
-      // Log all form data keys for debugging
-      const keys = Array.from(formData.keys())
-      console.log(`[Hikvision] Multipart Form Keys:`, keys)
-      
-      // Usually, the event info is in a field called 'event_log' or 'event_info'
-      for (const key of keys) {
-        const value = formData.get(key)
-        if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('<'))) {
-          console.log(`[Hikvision] Found data in key "${key}":`, value.substring(0, 200) + '...')
-          try {
-            eventData = JSON.parse(value)
-          } catch (e) {
-            // Might be XML, we will just save the raw string for now
-            eventData = { raw_xml: value }
+      try {
+        const formData = await request.formData()
+        
+        // Log all form data keys for debugging
+        const keys = Array.from(formData.keys())
+        console.log(`[Hikvision] Multipart Form Keys:`, keys)
+        
+        const eventStr = formData.get('AccessControllerEvent')
+        if (eventStr && typeof eventStr === 'string') {
+          eventData = JSON.parse(eventStr)
+        } else {
+          // Fallback if 'AccessControllerEvent' is not the key
+          eventData = {}
+          for (const [key, value] of formData.entries()) {
+             if (typeof value === 'string') eventData[key] = value
           }
         }
-      }
-      
-      if (!eventData) {
-        // If we couldn't find a JSON/XML string, just save all text fields
-        eventData = {}
-        for (const [key, value] of formData.entries()) {
-          if (typeof value === 'string') {
-            eventData[key] = value
-          }
-        }
+      } catch (formDataError) {
+         console.error('[Hikvision] Failed to parse formData. Attempting raw text fallback.', formDataError)
+         const rawText = await request.text()
+         eventData = { raw_payload: rawText, error: 'Failed to parse form-data' }
       }
     } else if (contentType.includes('application/json')) {
       eventData = await request.json()
