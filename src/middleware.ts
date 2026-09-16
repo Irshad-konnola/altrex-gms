@@ -47,7 +47,8 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/api/cron') ||
     request.nextUrl.pathname.startsWith('/api/payments/webhook') ||
     request.nextUrl.pathname.startsWith('/api/whatsapp/webhook') ||
-    request.nextUrl.pathname.startsWith('/api/device/checkin')
+    request.nextUrl.pathname.startsWith('/api/device/checkin') ||
+    request.nextUrl.pathname.startsWith('/api/device/hikvision')
   ) {
     return NextResponse.next()
   }
