@@ -1,4 +1,3 @@
- 
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -36,19 +35,24 @@ export async function getMembers() {
       photo_url,   
       device_user_id,
       created_at,   
+      split_timing,
       memberships (
         start_date,
         end_date,
         status,
         membership_plans (
           name,
-          duration_days
+          duration_days,
+          price
         )
       ),
       pt_assignments (
         sessions_remaining,
         status,
         end_date
+      ),
+      payments (
+        amount
       )
     `
     )
@@ -70,6 +74,7 @@ export async function getMembers() {
 
     let daysLeft = 0;
     let planName = "Unknown Plan";
+    let computedStatus = member.status; // Default to db status
 
     if (activeMembership) {
       const startDate = new Date(activeMembership.start_date);
@@ -93,18 +98,22 @@ export async function getMembers() {
 
       if (startDate > today) {
         // Future Plan
-        member.status = "upcoming";
+        computedStatus = "upcoming";
         planName = basePlanName;
         // Time left for a future plan is just the plan's total duration
         daysLeft = planDuration; 
       } else {
-        // Active Plan
+        // Active or Expired Plan
         const diffTime = endDate.getTime() - today.getTime();
         daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
         if (daysLeft > planDuration) {
           planName = `${basePlanName} (Renewed)`;
         } else {
           planName = basePlanName;
+        }
+
+        if (computedStatus !== "archived") {
+           computedStatus = daysLeft > 0 ? "active" : "expired";
         }
       }
     }
@@ -129,11 +138,20 @@ export async function getMembers() {
       }
     }
 
+    // Due amount calculation
+    const totalBilled = member.memberships?.reduce((sum: number, m: any) => {
+      const price = Array.isArray(m.membership_plans) ? m.membership_plans[0]?.price : m.membership_plans?.price;
+      return sum + (Number(price) || 0);
+    }, 0) || 0;
+    
+    const totalPaid = member.payments?.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0) || 0;
+    const dueAmount = Math.max(0, totalBilled - totalPaid);
+
     return {
       id: member.id,
       full_name: member.full_name,
       phone: member.phone,
-      status: member.status,
+      status: computedStatus,
       is_pt_member: isPTMemberActive,
       photo_url: member.photo_url,
       device_user_id: member.device_user_id,
@@ -142,6 +160,8 @@ export async function getMembers() {
       pt_sessions_left: ptSessionsLeft,
       plan_name: planName,
       created_at: member.created_at,
+      due_amount: dueAmount,
+      split_timing: member.split_timing
     };
   });
 }
@@ -202,6 +222,9 @@ export async function createMemberAction(formData: any) {
         health_notes: formData.health_notes || null,
         photo_url: formData.photoUrl || null,
         bmi: formData.bmi ? parseFloat(formData.bmi) : null,
+        weight: formData.weight || null,
+        height: formData.height || null,
+        split_timing: formData.split_timing || false,
         status: initialStatus,
         created_by: user.id,
       } as any)
@@ -248,26 +271,18 @@ export async function createMemberAction(formData: any) {
 
     if (paymentError) return { success: false, error: `Payment Error: ${paymentError.message}` };
 
-    // 🌟 WHATSAPP TRIGGER: Send Welcome Note
+    // WhatsApp logic...
     if (cleanPhone) {
       try {
         await sendTemplateMessage({
           to: cleanPhone,
           templateName: "altrex_welcome",
           components: [
-            {
-              type: "body",
-              parameters: [
-                { type: "text", text: formData.fullName || "Member" },
-              ],
-            },
+            { type: "body", parameters: [{ type: "text", text: formData.fullName || "Member" }] },
           ],
         });
         console.log(`✅ WhatsApp Welcome message sent to ${cleanPhone}`);
-      } catch (waError) {
-        console.error("⚠️ WhatsApp Welcome Message Failed:", waError);
-        // We don't throw here to avoid failing member registration if WhatsApp API drops
-      }
+      } catch (waError) {}
     }
     if (cleanPhone) {
       try {
@@ -287,9 +302,7 @@ export async function createMemberAction(formData: any) {
           ],
         });
         console.log(`✅ WhatsApp Receipt sent to ${cleanPhone}`);
-      } catch (waError) {
-        console.error("⚠️ WhatsApp Receipt Failed:", waError);
-      }
+      } catch (waError) {}
     }
 
     revalidatePath("/members");
@@ -304,7 +317,6 @@ export async function getMemberById(id: string) {
   const supabaseAuthClient = await createClient();
   const supabaseAdmin = getAdminClient();
 
-  // Verify the user is authenticated first
   const { data: { user } } = await supabaseAuthClient.auth.getUser();
   if (!user) return null;
 
@@ -351,7 +363,6 @@ export async function getMemberById(id: string) {
     startDateStr = membership.start_date;
 
     if (startDate > today) {
-      // Future plan
       const diffTime = endDate.getTime() - startDate.getTime();
       daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
     } else {
@@ -374,6 +385,9 @@ export async function getMemberById(id: string) {
     device_user_id: member.device_user_id,
     photo_url: member.photo_url,
     bmi: member.bmi,
+    weight: member.weight,
+    height: member.height,
+    split_timing: member.split_timing,
     plan_name: membership?.membership_plans?.name || "No Plan",
     start_date: startDateStr,
     end_date: endDateStr,
@@ -385,17 +399,14 @@ export async function getMemberById(id: string) {
 
 // 4. Update an existing member's profile
 export async function updateMemberAction(memberId: string, formData: any) {
-  const supabase = await createClient();
+  const supabaseAdmin = getAdminClient();
 
   try {
     let cleanPhone = formData.phone.replace(/\D/g, "");
-    if (cleanPhone.length > 10) {
-      cleanPhone = cleanPhone.slice(-10);
-    }
+    if (cleanPhone.length > 10) cleanPhone = cleanPhone.slice(-10);
     cleanPhone = "91" + cleanPhone;
 
-    // Check for duplicate phone number
-    const { data: existingMember } = await supabase
+    const { data: existingMember } = await supabaseAdmin
       .from("members")
       .select("id")
       .eq("phone", cleanPhone)
@@ -406,7 +417,7 @@ export async function updateMemberAction(memberId: string, formData: any) {
       return { success: false, error: "Another member with this phone number already exists." };
     }
 
-    const { error }: any = await (supabase.from("members") as any)
+    const { error }: any = await (supabaseAdmin.from("members") as any)
       .update({
         full_name: formData.fullName,
         phone: cleanPhone,
@@ -419,10 +430,42 @@ export async function updateMemberAction(memberId: string, formData: any) {
         device_user_id: formData.deviceUserId || null,
         photo_url: formData.photoUrl || null,
         bmi: formData.bmi ? parseFloat(formData.bmi) : null,
+        weight: formData.weight || null,
+        height: formData.height || null,
+        split_timing: formData.split_timing || false,
       })
       .eq("id", memberId);
 
     if (error) throw new Error(`Profile update failed: ${error.message}`);
+
+    // If plan was changed (EditMemberModal triggers this when planId is present)
+    if (formData.planId) {
+       const { data: planData, error: planError }: any = await supabaseAdmin
+        .from("membership_plans")
+        .select("duration_days")
+        .eq("id", formData.planId)
+        .single();
+        
+       if (!planError && planData) {
+         // Get current active membership
+         const { data: memberships }: any = await supabaseAdmin
+          .from("memberships")
+          .select("id, start_date")
+          .eq("member_id", memberId)
+          .order("end_date", { ascending: false })
+          .limit(1);
+          
+         if (memberships && memberships.length > 0) {
+            const startDate = new Date(memberships[0].start_date);
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + planData.duration_days);
+            
+            await supabaseAdmin.from("memberships")
+              .update({ plan_id: formData.planId, end_date: endDate.toISOString().split("T")[0] })
+              .eq("id", memberships[0].id);
+         }
+       }
+    }
 
     revalidatePath("/members");
     revalidatePath(`/members/${memberId}`);
@@ -434,11 +477,10 @@ export async function updateMemberAction(memberId: string, formData: any) {
 
 // 5. Archive (Soft Delete) a member
 export async function archiveMemberAction(memberId: string) {
-  const supabase = await createClient();
+  const supabaseAdmin = getAdminClient();
 
   try {
-    // Check if member is active
-    const { data: member } = await (supabase as any)
+    const { data: member } = await (supabaseAdmin as any)
       .from("members")
       .select("status")
       .eq("id", memberId)
@@ -448,7 +490,7 @@ export async function archiveMemberAction(memberId: string) {
       return { success: false, error: "Cannot archive an active member. Wait for their plan to expire or cancel it first." };
     }
 
-    const { error }: any = await (supabase.from("members") as any)
+    const { error }: any = await (supabaseAdmin.from("members") as any)
       .update({ status: "archived" })
       .eq("id", memberId);
 
@@ -463,11 +505,11 @@ export async function archiveMemberAction(memberId: string) {
 
 // 5.5. Unarchive a member
 export async function unarchiveMemberAction(memberId: string) {
-  const supabase = await createClient();
+  const supabaseAdmin = getAdminClient();
 
   try {
-    const { error }: any = await (supabase.from("members") as any)
-      .update({ status: "expired" }) // Default to expired, if they had an active plan it will be recalculated on next login/cron
+    const { error }: any = await (supabaseAdmin.from("members") as any)
+      .update({ status: "expired" }) 
       .eq("id", memberId);
 
     if (error) throw new Error(`Failed to unarchive member: ${error.message}`);
@@ -481,10 +523,10 @@ export async function unarchiveMemberAction(memberId: string) {
 
 // 6. Extend a member's plan (Add days manually)
 export async function extendMembershipAction(memberId: string, extraDays: number) {
-  const supabase = await createClient();
+  const supabaseAdmin = getAdminClient();
 
   try {
-    const { data: memberships, error: fetchError }: any = await supabase
+    const { data: memberships, error: fetchError }: any = await supabaseAdmin
       .from("memberships")
       .select("id, end_date")
       .eq("member_id", memberId)
@@ -501,7 +543,7 @@ export async function extendMembershipAction(memberId: string, extraDays: number
     currentEnd.setDate(currentEnd.getDate() + extraDays);
     const newEndDate = currentEnd.toISOString().split("T")[0];
 
-    const { error: updateError }: any = await (supabase.from("memberships") as any)
+    const { error: updateError }: any = await (supabaseAdmin.from("memberships") as any)
       .update({ end_date: newEndDate })
       .eq("id", membership.id);
 
@@ -517,13 +559,12 @@ export async function extendMembershipAction(memberId: string, extraDays: number
 
 // 7. Renew a Membership (Append Date Logic & WhatsApp Receipt)
 export async function renewMembershipAction(memberId: string, formData: any) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabaseAuthClient = await createClient();
+  const supabaseAdmin = getAdminClient();
+  const { data: { user } } = await supabaseAuthClient.auth.getUser();
 
   try {
-    const { data: planData }: any = await supabase
+    const { data: planData }: any = await supabaseAdmin
       .from("membership_plans")
       .select("name, duration_days")
       .eq("id", formData.planId)
@@ -531,7 +572,7 @@ export async function renewMembershipAction(memberId: string, formData: any) {
 
     if (!planData) throw new Error("Plan not found");
 
-    const { data: memberships }: any = await supabase
+    const { data: memberships }: any = await supabaseAdmin
       .from("memberships")
       .select("id, end_date")
       .eq("member_id", memberId)
@@ -553,36 +594,32 @@ export async function renewMembershipAction(memberId: string, formData: any) {
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + planData.duration_days);
 
-    await (supabase.from("memberships") as any)
+    await (supabaseAdmin.from("memberships") as any)
       .update({ status: "renewed" })
       .eq("member_id", memberId)
       .eq("status", "active");
 
-    await (supabase.from("memberships") as any).insert({
+    await (supabaseAdmin.from("memberships") as any).insert({
       member_id: memberId,
       plan_id: formData.planId,
       start_date: startDate.toISOString().split("T")[0],
       end_date: endDate.toISOString().split("T")[0],
       status: "active",
-      
     });
     
-    // Fix: Set member status back to active
-    await (supabase.from("members") as any).update({ status: "active" }).eq("id", memberId);
+    await (supabaseAdmin.from("members") as any).update({ status: "active" }).eq("id", memberId);
 
-    await (supabase.from("payments") as any).insert({
+    await (supabaseAdmin.from("payments") as any).insert({
       member_id: memberId,
       amount: parseFloat(formData.amount),
       method: formData.paymentMethod,
       utr_reference: formData.reference || null,
       status: "paid",
       description: `Renewal: ${planData.name}`,
-      
     });
 
-    // 🌟 WHATSAPP TRIGGER: Send Renewal Receipt
     try {
-const { data: member }: any = await supabase
+      const { data: member }: any = await supabaseAdmin
         .from("members")
         .select("full_name, phone")
         .eq("id", memberId)
@@ -605,9 +642,7 @@ const { data: member }: any = await supabase
           ],
         });
       }
-    } catch (waError) {
-      console.error("⚠️ WhatsApp Renewal Receipt Error:", waError);
-    }
+    } catch (waError) {}
 
     revalidatePath("/members");
     revalidatePath(`/members/${memberId}`);
@@ -619,27 +654,23 @@ const { data: member }: any = await supabase
 
 // 8. Record a standalone Partial Payment & WhatsApp Receipt
 export async function recordPaymentAction(memberId: string, formData: any) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabaseAdmin = getAdminClient();
 
   try {
-    const { error }: any = await (supabase.from("payments") as any).insert({
+    const { error }: any = await (supabaseAdmin.from("payments") as any).insert({
       member_id: memberId,
       amount: parseFloat(formData.amount),
       method: formData.paymentMethod,
       utr_reference: formData.reference || null,
       status: "paid",
       description: formData.description || "Misc. Payment",
-      
     });
 
     if (error) throw error;
 
-    // 🌟 WHATSAPP TRIGGER: Send Payment Receipt
     try {
-const { data: member }: any = await supabase        .from("members")
+      const { data: member }: any = await supabaseAdmin        
+        .from("members")
         .select("full_name, phone")
         .eq("id", memberId)
         .single();
@@ -661,13 +692,60 @@ const { data: member }: any = await supabase        .from("members")
           ],
         });
       }
-    } catch (waError) {
-      console.error("⚠️ WhatsApp Payment Receipt Error:", waError);
-    }
+    } catch (waError) {}
 
     revalidatePath(`/members/${memberId}`);
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
+}
+
+// 9. Delete Member
+export async function deleteMemberAction(memberId: string) {
+  const supabaseAdmin = getAdminClient();
+
+  try {
+    // Delete dependent records first to avoid foreign key constraints
+    await supabaseAdmin.from("payments").delete().eq("member_id", memberId);
+    await supabaseAdmin.from("memberships").delete().eq("member_id", memberId);
+    await supabaseAdmin.from("attendance").delete().eq("member_id", memberId);
+    await supabaseAdmin.from("pt_assignments").delete().eq("member_id", memberId);
+
+    const { error }: any = await (supabaseAdmin.from("members") as any)
+      .delete()
+      .eq("id", memberId);
+
+    if (error) throw new Error(`Failed to delete member: ${error.message}`);
+
+    revalidatePath("/members");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// Get specific member dues
+export async function getMemberDuesAction(memberId: string) {
+  const supabaseAdmin = getAdminClient();
+
+  const { data: payData } = await supabaseAdmin.from('payments').select('amount').eq('member_id', memberId);
+  const { data: memData } = await supabaseAdmin.from('memberships').select('membership_plans(price)').eq('member_id', memberId);
+  const { data: ptData } = await supabaseAdmin.from('pt_assignments').select('pt_packages(price)').eq('member_id', memberId);
+
+  let totalPaid = 0;
+  payData?.forEach((p: any) => totalPaid += Number(p.amount));
+
+  let totalBilled = 0;
+  memData?.forEach((m: any) => {
+    const price = Array.isArray(m.membership_plans) ? m.membership_plans[0]?.price : m.membership_plans?.price;
+    totalBilled += Number(price || 0);
+  });
+  
+  ptData?.forEach((m: any) => {
+    const price = Array.isArray(m.pt_packages) ? m.pt_packages[0]?.price : m.pt_packages?.price;
+    totalBilled += Number(price || 0);
+  });
+
+  return Math.max(0, totalBilled - totalPaid);
 }

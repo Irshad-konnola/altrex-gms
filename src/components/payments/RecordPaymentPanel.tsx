@@ -15,7 +15,7 @@ import { useState, useEffect } from "react";
 import { RazorpayLinkModal } from "./RazorpayLinkModal";
 import { useMembers } from "@/hooks/useMembers";
 import { usePlans } from "@/hooks/usePlans";
-import { recordPaymentAction } from "@/app/(dashboard)/members/actions";
+import { recordPaymentAction, getMemberDuesAction } from "@/app/(dashboard)/members/actions";
 import { createClient } from "@/lib/supabase/client";
 import { usePaymentMutations } from "@/hooks/usePaymentMutations"; // 🌟 Re-added
 
@@ -28,8 +28,7 @@ export function RecordPaymentPanel({ isOpen, onClose }: RecordPaymentPanelProps)
   const { data: members, isLoading: isLoadingMembers } = useMembers();
   const { data: plans, isLoading: isLoadingPlans } = usePlans();
   const { generateRazorpayLink } = usePaymentMutations(); // 🌟 Re-added
-  const supabase = createClient();
-  
+    
 const [modalData, setModalData] = useState<{ url: string; phone?: string; memberId?: string } | null>(null);  
   const [memberId, setMemberId] = useState("");
   const [memberDues, setMemberDues] = useState(0); 
@@ -51,41 +50,20 @@ const [modalData, setModalData] = useState<{ url: string; phone?: string; member
     (m.phone && m.phone.includes(searchQuery))
   );
 
+  // Fetch dues securely via server action
   useEffect(() => {
-    async function fetchMemberDues() {
+    async function load() {
       if (!memberId) {
-        setMemberDues(0);
-        return;
+        setMemberDues(0)
+        return
       }
-      
-      const { data: payData } = await supabase.from('payments').select('amount').eq('member_id', memberId);
-      const { data: memData } = await supabase.from('memberships').select('membership_plans(price)').eq('member_id', memberId);
-      const { data: ptData } = await supabase.from('pt_assignments').select('pt_packages(price)').eq('member_id', memberId);
-
-      let totalPaid = 0;
-      
-      payData?.forEach((p: any) => totalPaid += Number(p.amount));
-
-      let totalBilled = 0;
-      
-      memData?.forEach((m: any) => {
-        const price = Array.isArray(m.membership_plans) ? m.membership_plans[0]?.price : m.membership_plans?.price;
-        totalBilled += Number(price || 0);
-      });
-      
-      ptData?.forEach((pt: any) => {
-        const price = Array.isArray(pt.pt_packages) ? pt.pt_packages[0]?.price : pt.pt_packages?.price;
-        totalBilled += Number(price || 0);
-      });
-
-      const pending = Math.max(0, totalBilled - totalPaid);
-      setMemberDues(pending);
-
-      if (purpose === "due") setAmount(pending.toString());
+    getMemberDuesAction(memberId).then(pending => {
+        setMemberDues(pending)
+        if (purpose === "due") setAmount(pending.toString())
+      })
     }
-    
-    fetchMemberDues();
-  }, [memberId, purpose, supabase]);
+    load()
+  }, [memberId, purpose])
 
   const handlePlanSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const pId = e.target.value;

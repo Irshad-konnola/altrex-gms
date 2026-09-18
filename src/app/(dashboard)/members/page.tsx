@@ -32,6 +32,7 @@ export default async function MembersPage({
       case "Expiring": return member.status === "expiring"
       case "Expired": return member.status === "expired"
       case "PT Members": return member.is_pt_member
+      case "Due Pending": return member.due_amount && member.due_amount > 0
       default: return true
     }
   })

@@ -7,6 +7,7 @@ import { DashboardFilter } from './DashboardFilter'
 import { LiveFeed } from './LiveFeed'
 import { ExpiringPanel } from './ExpiringPanel'
 import { InactivePanel } from './InactivePanel'
+import { OverdueDuesPanel } from '@/components/payments/OverdueDuesPanel'
 import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Plus, Users, UserCheck, Clock, IndianRupee } from 'lucide-react'
@@ -89,6 +90,7 @@ export function DashboardClient() {
         <div className="space-y-6">
           <ExpiringPanel />
           <InactivePanel />
+          <OverdueDuesPanel />
         </div>
       </div>
     </div>

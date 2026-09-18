@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     // 4. Find the member by their device Face ID
     const { data: member, error: memberError } = await supabaseAdmin
       .from('members')
-      .select('id, full_name, status, is_pt_member')
+      .select('id, full_name, status, is_pt_member, split_timing')
       .eq('device_user_id', parsed.deviceUserId)
       .single()
 
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       return new Response('OK', { status: 200 })
     }
 
-    // 4.5. Check for Cooldown (2 Hours)
+    // 4.5. Check for Cooldown
     const { data: lastCheckIn } = await supabaseAdmin
       .from('attendance_logs')
       .select('check_in_at')
@@ -55,13 +55,26 @@ export async function POST(request: Request) {
       .single()
 
     if (lastCheckIn) {
-      const lastCheckInTime = new Date(lastCheckIn.check_in_at).getTime()
+      const lastCheckInDate = new Date(lastCheckIn.check_in_at)
+      const lastCheckInTime = lastCheckInDate.getTime()
       const now = parsed.datetime.getTime()
       const hoursDiff = (now - lastCheckInTime) / (1000 * 60 * 60)
       
-      if (hoursDiff < 2) {
-        console.log(`[eSSL] ⏳ Cooldown active for ${member.full_name}. Ignoring duplicate scan.`)
-        return new Response('OK', { status: 200 }) // Ignore silently
+      if (member.split_timing) {
+        // Only 2 hour anti-spam cooldown
+        if (hoursDiff < 2) {
+          console.log(`[eSSL] Anti-spam cooldown active for ${member.full_name}. Ignoring duplicate scan.`)
+          return new Response('OK', { status: 200 }) // Ignore silently
+        }
+      } else {
+        // Same calendar day cooldown
+        const lastCheckInDateString = lastCheckInDate.toISOString().split('T')[0]
+        const nowDateString = parsed.datetime.toISOString().split('T')[0]
+        
+        if (lastCheckInDateString === nowDateString) {
+          console.log(`[eSSL] Daily limit reached for ${member.full_name}. Ignoring duplicate scan.`)
+          return new Response('OK', { status: 200 }) // Ignore silently
+        }
       }
     }
 
@@ -77,7 +90,7 @@ export async function POST(request: Request) {
 
     if (attendanceError) throw attendanceError
 
-    console.log(`[eSSL] ✅ ${member.full_name} checked in via ${parsed.method}`)
+    console.log(`[eSSL] ${member.full_name} checked in via ${parsed.method}`)
 
     // (PT Session Deduction logic will plug in here later)
 

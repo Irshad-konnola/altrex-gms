@@ -9,7 +9,7 @@ import { MemberBadge } from "./MemberBadge"
 import { AdjustMembershipModal } from "./AdjustMembershipModal"
 import { EditMemberModal } from "./EditMemberModal"
 import { useRouter } from "next/navigation"
-import { archiveMemberAction, unarchiveMemberAction } from "@/app/(dashboard)/members/actions"
+import { archiveMemberAction, unarchiveMemberAction, deleteMemberAction } from "@/app/(dashboard)/members/actions"
 import { toast } from "sonner"
 import { PTTab } from "@/components/pt/PTTab"
 import { MemberPaymentsTab } from "./MemberPaymentsTab"
@@ -19,6 +19,7 @@ const TABS = ["Overview", "Attendance", "Payments", "PT"]
 
 export function MemberProfile({ initialData }: { initialData: any }) {
   const [isArchiving, setIsArchiving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("Overview")
   const member = initialData

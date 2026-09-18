@@ -30,12 +30,18 @@ export function PaymentsClient() {
   const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
   const [currentPage, setCurrentPage] = useState(1)
+  const [searchQuery, setSearchQuery] = useState("")
   const pageSize = 15
 
   const validPayments = payments?.filter(p => p.status === 'paid' || !p.status) || []
+  const searchedPayments = validPayments.filter(p => {
+    if (!searchQuery) return true
+    const q = searchQuery.toLowerCase()
+    return p.members?.full_name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)
+  })
 
   // Apply sorting
-  const sortedPayments = [...validPayments].sort((a, b) => {
+  const sortedPayments = [...searchedPayments].sort((a, b) => {
     const timeA = new Date(a.created_at).getTime()
     const timeB = new Date(b.created_at).getTime()
     return sortOrder === 'desc' ? timeB - timeA : timeA - timeB
@@ -121,7 +127,15 @@ export function PaymentsClient() {
                 <h2 className="text-base font-bold text-foreground mb-1">Recent payments</h2>
                 <p className="text-xs text-muted-foreground">All channels combined</p>
               </div>
-              <select
+              <div className="flex gap-3 items-center">
+                  <input
+                    type="text"
+                    placeholder="Search payments..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-card border border-border text-foreground text-sm rounded-md px-3 py-1.5 focus:border-gold-500 outline-none w-full sm:w-64"
+                  />
+                  <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
                 className="bg-card border border-border text-foreground text-sm rounded-md px-3 py-1.5 focus:border-gold-500 outline-none"
@@ -129,6 +143,7 @@ export function PaymentsClient() {
                 <option value="desc">Newest First</option>
                 <option value="asc">Oldest First</option>
               </select>
+                </div>
             </div>
             
             {isLoading ? (
