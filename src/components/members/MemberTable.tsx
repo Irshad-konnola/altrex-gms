@@ -1,10 +1,12 @@
-// src/components/members/MemberTable.tsx
 /* eslint-disable @next/next/no-img-element */
 "use client"
 
 import { useRouter } from "next/navigation"
-import { User, ScanFace, Eye,Users } from "lucide-react"
+import { User, ScanFace, Eye, Users, Trash2 } from "lucide-react"
 import { MemberBadge } from "./MemberBadge"
+import { deleteMemberAction } from "@/app/(dashboard)/members/actions"
+import { toast } from "sonner"
+import { useState } from "react"
 
 export interface MemberRow {
   id: string
@@ -21,9 +23,28 @@ export interface MemberRow {
 }
 
 export function MemberTable({ members }: { members: MemberRow[] }) {
-  console.log(members,"member details");
-  
   const router = useRouter()
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    if (!window.confirm("WARNING: Are you sure you want to PERMANENTLY delete this member? All data will be lost.")) return
+    
+    setIsDeleting(id)
+    try {
+      const result = await deleteMemberAction(id)
+      if (result.success) {
+        toast.success("Member deleted permanently.")
+        router.refresh()
+      } else {
+        toast.error(`Error: ${result.error}`)
+      }
+    } catch {
+      toast.error("Failed to delete member.")
+    } finally {
+      setIsDeleting(null)
+    }
+  }
 
   if (members.length === 0) {
     return (
@@ -39,6 +60,7 @@ export function MemberTable({ members }: { members: MemberRow[] }) {
       <table className="w-full text-sm text-left">
         <thead className="text-xs text-muted-foreground uppercase bg-card border-b border-border">
           <tr>
+            <th className="px-6 py-4 font-bold tracking-wider">#</th>
             <th className="px-6 py-4 font-bold tracking-wider">Member</th>
             <th className="px-6 py-4 font-bold tracking-wider">Contact</th>
             <th className="px-6 py-4 font-bold tracking-wider">Plan</th>
@@ -48,12 +70,13 @@ export function MemberTable({ members }: { members: MemberRow[] }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-dark-800">
-          {members.map((member) => (
+          {members.map((member, index) => (
             <tr 
               key={member.id} 
               onClick={() => router.push(`/members/${member.id}`)}
               className="hover:bg-card/50 transition-colors group cursor-pointer"
             >
+              <td className="px-6 py-4 text-muted-foreground font-medium">{index + 1}</td>
               <td className="px-6 py-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground border border-border overflow-hidden shrink-0">
                   {member.photo_url ? (
@@ -84,7 +107,7 @@ export function MemberTable({ members }: { members: MemberRow[] }) {
                   <span className={member.days_left <= 7 ? "text-yellow-400 font-bold" : "text-foreground font-medium"}>
                     {member.days_left} days <span className="text-muted-foreground text-xs font-normal">(Plan)</span>
                   </span>
-                  {member.is_pt_member && typeof member.pt_sessions_left === 'number' && (
+                  {member.is_pt_member && typeof member.pt_sessions_left === 'number' && member.pt_sessions_left > 0 && (
                     <span className={member.pt_sessions_left <= 3 ? "text-yellow-400 font-bold text-sm" : "text-gold-500 font-medium text-sm"}>
                       {member.pt_days_left} days / {member.pt_sessions_left} sesh <span className="text-muted-foreground text-xs font-normal">(PT)</span>
                     </span>
@@ -92,12 +115,11 @@ export function MemberTable({ members }: { members: MemberRow[] }) {
                 </div>
               </td>
               
-              {/* Fixed Action Column */}
               <td className="px-6 py-4">
                 <div className="flex items-center justify-end gap-2">
                   <button 
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevents the row click from firing
+                      e.stopPropagation();
                       router.push(`/members/${member.id}`);
                     }}
                     className="p-2 text-muted-foreground hover:text-foreground bg-card hover:bg-card rounded-lg transition-all border border-border hover:border-border"
@@ -105,17 +127,14 @@ export function MemberTable({ members }: { members: MemberRow[] }) {
                   >
                     <Eye className="w-4 h-4" />
                   </button>
-                  {/* <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Edit logic routed to profile for now, where edit modal exists
-                      router.push(`/members/${member.id}`);
-                    }}
-                    className="p-2 text-muted-foreground hover:text-gold-500 bg-card hover:bg-card rounded-lg transition-all border border-border hover:border-gold-500/50"
-                    title="Edit Member"
+                  <button 
+                    onClick={(e) => handleDelete(e, member.id)}
+                    disabled={isDeleting === member.id}
+                    className="p-2 text-red-400 hover:text-red-500 bg-card hover:bg-red-500/10 rounded-lg transition-all border border-border hover:border-red-500/30"
+                    title="Delete Member"
                   >
-                    <Pencil className="w-4 h-4" />
-                  </button> */}
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </td>
             </tr>

@@ -19,6 +19,7 @@ export function PaymentTable({ payments }: PaymentTableProps) {
       <table className="w-full text-left text-sm whitespace-nowrap">
         <thead>
           <tr className="text-muted-foreground text-xs uppercase tracking-wider border-b border-border/50">
+            <th className="pb-3 font-semibold px-4">#</th>
             <th className="pb-3 font-semibold px-4">Member</th>
             <th className="pb-3 font-semibold px-4">Description</th>
             <th className="pb-3 font-semibold px-4">Method</th>
@@ -28,8 +29,9 @@ export function PaymentTable({ payments }: PaymentTableProps) {
           </tr>
         </thead>
         <tbody className="divide-y divide-border/30">
-          {payments.map((payment) => (
+          {payments.map((payment, index) => (
             <tr key={payment.id} className="hover:bg-card/50 transition-colors group">
+              <td className="py-4 px-4 text-muted-foreground text-xs">{index + 1}</td>
               <td className="py-4 px-4 flex items-center gap-3">
                 <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-foreground shrink-0">
                   {generateInitials(payment.members?.full_name)}

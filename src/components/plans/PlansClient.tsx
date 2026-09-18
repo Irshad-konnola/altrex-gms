@@ -14,6 +14,8 @@ export function PlansClient() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<MembershipPlan | null>(null)
   const [page, setPage] = useState(1)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc" | "price_asc" | "price_desc">("desc")
   const pageSize = 12
 
   const { data: plans, isLoading } = usePlans()
@@ -65,10 +67,37 @@ export function PlansClient() {
 
 const isSubmitting = createPlan.isPending || updatePlan.isPending || archivePlan.isPending
 
+  const filteredPlans = plans?.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())) || []
+  const sortedPlans = [...filteredPlans].sort((a, b) => {
+    if (sortOrder === "price_asc") return Number(a.price) - Number(b.price)
+    if (sortOrder === "price_desc") return Number(b.price) - Number(a.price)
+    if (sortOrder === "asc") return new Date((a as any).created_at || 0).getTime() - new Date((b as any).created_at || 0).getTime()
+    return new Date((b as any).created_at || 0).getTime() - new Date((a as any).created_at || 0).getTime() // desc default
+  })
+
+
   return (
     <div className="space-y-8 mt-2">
-      <div className="flex justify-between items-center">
-        <div /> 
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex gap-2">
+          <input 
+            type="text" 
+            placeholder="Search plans..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="bg-card border border-border text-foreground text-sm rounded-md px-3 py-1.5 focus:border-gold-500 outline-none"
+          />
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as any)}
+            className="bg-card border border-border text-foreground text-sm rounded-md px-3 py-1.5 focus:border-gold-500 outline-none"
+          >
+            <option value="desc">Newest</option>
+            <option value="asc">Oldest</option>
+            <option value="price_asc">Price (Low to High)</option>
+            <option value="price_desc">Price (High to Low)</option>
+          </select>
+        </div>
         <Button 
           onClick={handleCreate}
           className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-6"
@@ -82,14 +111,14 @@ const isSubmitting = createPlan.isPending || updatePlan.isPending || archivePlan
         <div className="flex justify-center items-center py-32">
           <Loader2 className="h-8 w-8 animate-spin text-gold-500" />
         </div>
-      ) : !plans?.length ? (
+      ) : !sortedPlans?.length ? (
         <div className="text-center py-20 bg-muted rounded-xl border border-border">
           <p className="text-foreground font-medium">No membership plans active.</p>
 <p className="text-sm text-muted-foreground mt-1">Click &quot;New plan&quot; to create your first pricing tier.</p>        </div>
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {plans.slice((page - 1) * pageSize, page * pageSize).map((plan) => (
+            {sortedPlans.slice((page - 1) * pageSize, page * pageSize).map((plan) => (
               <PlanCard 
                 key={plan.id} 
                 plan={plan} 
@@ -97,14 +126,14 @@ const isSubmitting = createPlan.isPending || updatePlan.isPending || archivePlan
               />
             ))}
           </div>
-          {plans.length > pageSize && (
+          {sortedPlans.length > pageSize && (
             <div className="flex items-center justify-between px-2 py-4 border-t border-border mt-4">
               <div className="text-sm text-muted-foreground">
-                Page <span className="font-medium text-foreground">{page}</span> of <span className="font-medium text-foreground">{Math.ceil(plans.length / pageSize)}</span>
+                Page <span className="font-medium text-foreground">{page}</span> of <span className="font-medium text-foreground">{Math.ceil(sortedPlans.length / pageSize)}</span>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
-                <Button variant="outline" size="sm" disabled={page >= Math.ceil(plans.length / pageSize)} onClick={() => setPage(page + 1)}>Next</Button>
+                <Button variant="outline" size="sm" disabled={page >= Math.ceil(sortedPlans.length / pageSize)} onClick={() => setPage(page + 1)}>Next</Button>
               </div>
             </div>
           )}

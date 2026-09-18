@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { useTransition, useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 
-const TABS = ["All", "Active", "Expiring", "Expired", "PT Members"]
+const TABS = ["All", "Active", "Expiring", "Expired", "PT Members", "Due Pending"]
 
 export function MemberFilters({ initialSearch, activeTab, initialSort }: { initialSearch: string, activeTab: string, initialSort?: string }) {
   const router = useRouter()

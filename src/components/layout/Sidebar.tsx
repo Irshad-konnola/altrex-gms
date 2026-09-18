@@ -31,7 +31,7 @@ const routes = [
   { href: "/attendance", label: "Attendance", icon: ClipboardCheck, role: "both" },
   { href: "/members", label: "Members", icon: Users, role: "both" },
   { href: "/payments", label: "Payments", icon: CreditCard, role: "both" },
-  { href: "/plans", label: "Plans", icon: Dumbbell, role: "owner" },
+  { href: "/plans", label: "Plans", icon: Dumbbell, role: "both" },
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle, role: "owner" },
   { href: "/pt", label: "Personal Training", icon: Dumbbell, role: "both" },
   { href: "/reports", label: "Reports", icon: BarChart3, role: "owner" },

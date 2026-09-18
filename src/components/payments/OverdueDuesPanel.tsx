@@ -1,4 +1,3 @@
-// src/components/payments/OverdueDuesPanel.tsx
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -6,19 +5,16 @@ import { Button } from "@/components/ui/button"
 import { useOverdueMembers } from "@/hooks/useOverdueMembers"
 import { usePaymentMutations } from "@/hooks/usePaymentMutations"
 import { formatCurrency } from "@/lib/utils/fromatCurrency"
-import { format, parseISO } from "date-fns"
 import { Bell, Loader2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
 import { useState } from "react"
 
 export function OverdueDuesPanel() {
   const { data: overdueMembers, isLoading } = useOverdueMembers()
-  console.log(overdueMembers,"overdue member details");
   
   const { generateRazorpayLink } = usePaymentMutations()
   const [loadingId, setLoadingId] = useState<string | null>(null)
 
-  
   const handleSendReminder = async (member: any) => {
     if (!member.phone) {
       toast.error("No phone number on file for this member")
@@ -27,12 +23,9 @@ export function OverdueDuesPanel() {
 
     setLoadingId(member.id)
     try {
-      const plan = member.current_memberships?.[0]?.membership_plans
-      const amount = plan?.price || 0
-      const planName = plan?.name || "Membership Renewal"
-      const planId = plan?.id
-
-      if (amount <= 0) throw new Error("Could not determine plan price")
+      const amount = member.due_amount || 0
+      const planName = "Pending Dues"
+      const planId = "" // Empty string or undefined
 
       // 1. Generate Razorpay Link
       const link = await generateRazorpayLink.mutateAsync({
@@ -44,7 +37,7 @@ export function OverdueDuesPanel() {
         planId: planId,
       })
 
-      // 2. Send WhatsApp using our Bridge API
+      // 2. Send WhatsApp Message
       const waResponse = await fetch('/api/whatsapp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -66,7 +59,7 @@ export function OverdueDuesPanel() {
       if (!waResponse.ok) throw new Error("Failed to send WhatsApp message")
 
       toast.success(`Reminder sent to ${member.full_name}`)
-    
+      
     } catch (error: any) {
       console.error(error)
       toast.error(error.message || "Failed to send reminder")
@@ -76,60 +69,60 @@ export function OverdueDuesPanel() {
   }
 
   return (
-    <Card className="bg-card border-border">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-foreground text-lg">
-          <AlertCircle className="h-5 w-5 text-red-500" />
-          Overdue Dues
+    <Card className="h-full bg-card border-border shadow-md">
+      <CardHeader className="pb-3 border-b border-border bg-muted/50 rounded-t-xl">
+        <CardTitle className="text-sm font-semibold flex items-center text-red-500">
+          <AlertCircle className="h-4 w-4 mr-2" />
+          Pending Dues
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex justify-center p-4">
-            <Loader2 className="h-6 w-6 animate-spin text-gold-500" />
-          </div>
-        ) : !overdueMembers || overdueMembers.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center py-4">No overdue members right now.</p>
-        ) : (
-          <div className="space-y-4">
-            {/* 🔴 FIX: Added ': any' to member below to clear the TypeScript 'never' error */}
-            { }
-            {overdueMembers.map((member: any) => {
-              const plan = member.current_memberships?.[0]?.membership_plans
-              const endDate = member.current_memberships?.[0]?.end_date
-              
-              return (
-                <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-muted border border-border">
-                  <div className="space-y-1">
-                    <p className="font-medium text-foreground text-sm">{member.full_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Expired: {endDate ? format(parseISO(endDate), 'MMM dd') : 'Unknown'}
-                    </p>
+      <CardContent className="p-0">
+        <div className="max-h-[350px] overflow-y-auto overflow-x-hidden">
+          {isLoading ? (
+            <div className="flex justify-center p-6"><Loader2 className="h-5 w-5 animate-spin text-gold-500" /></div>
+          ) : !overdueMembers || overdueMembers.length === 0 ? (
+            <div className="p-6 text-center text-sm text-muted-foreground">
+              No pending dues found.
+            </div>
+          ) : (
+            <div className="divide-y divide-dark-800/50">
+              {overdueMembers.map((member: any) => {
+                const amount = member.due_amount
+                
+                return (
+                  <div key={member.id} className="flex flex-col gap-2 p-4 hover:bg-muted/50 transition-colors group">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <p className="font-semibold text-foreground text-sm">{member.full_name}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <span className="font-medium text-red-400">{formatCurrency(amount || 0)}</span>
+                          <span className="text-dark-600">•</span>
+                          {member.phone}
+                        </p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="border-gold-500/50 text-gold-500 hover:bg-gold-500 hover:text-dark-900 h-8 px-2.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleSendReminder(member)}
+                        disabled={loadingId === member.id}
+                      >
+                        {loadingId === member.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <>
+                            <Bell className="h-3.5 w-3.5" />
+                            <span className="ml-1.5 text-xs font-semibold">Remind</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-red-400">
-                      {formatCurrency(plan?.price || 0)}
-                    </span>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-dark-900 h-8 px-2"
-                      onClick={() => handleSendReminder(member)}
-                      disabled={loadingId === member.id}
-                    >
-                      {loadingId === member.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Bell className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
+                )
+              })}
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

@@ -2,14 +2,17 @@
 import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { startOfMonth, subMonths, format } from 'date-fns'
 
 export async function GET() {
   try {
-    const supabase = await createClient()
+    const supabaseAdmin = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
     
-    const db = supabase as any
+    const db = supabaseAdmin as any
 
     // 1. Get Member Status Counts
     const { data: members, error: memberError } = await db
@@ -32,17 +35,15 @@ export async function GET() {
 
     // 2. Format Data for the Chart
     const statusChartData = [
-      { name: 'Active', value: activeMembers, fill: '#22c55e' }, // text-green-500
-      { name: 'Expiring', value: expiringMembers, fill: '#eab308' }, // text-yellow-500
-      { name: 'Expired', value: expiredMembers, fill: '#ef4444' }, // text-red-500
+      { name: 'Active', value: activeMembers, fill: '#22c55e' },
+      { name: 'Expiring', value: expiringMembers, fill: '#eab308' },
+      { name: 'Expired', value: expiredMembers, fill: '#ef4444' },
     ]
 
     // 3. Dynamic Revenue Data (Last 7 Months)
     const today = new Date()
-    // Calculate the start date for 6 months ago (which gives us 7 months total including current)
     const sevenMonthsAgo = startOfMonth(subMonths(today, 6)).toISOString()
 
-    // Fetch all successful payments from the last 7 months
     const { data: payments, error: paymentsError } = await db
       .from('payments')
       .select('amount, created_at')
@@ -51,17 +52,14 @@ export async function GET() {
 
     if (paymentsError) throw paymentsError
 
-    // Initialize an array with the last 7 months set to 0 revenue
     const revenueMap = new Map()
     for (let i = 6; i >= 0; i--) {
       const monthDate = subMonths(today, i)
-      const monthName = format(monthDate, 'MMM') // e.g., 'Jan', 'Feb'
+      const monthName = format(monthDate, 'MMM')
       revenueMap.set(monthName, 0)
     }
 
-    // Populate the map with actual revenue
     if (payments) {
-      
       payments.forEach((payment: any) => {
         const paymentMonth = format(new Date(payment.created_at), 'MMM')
         if (revenueMap.has(paymentMonth)) {
@@ -70,10 +68,7 @@ export async function GET() {
       })
     }
 
-    // Convert map back to the array format required by Recharts
     const revenueData = Array.from(revenueMap, ([month, revenue]) => ({ month, revenue }))
-
-    // Get the current month's revenue for the KPI card
     const currentMonthName = format(today, 'MMM')
     const currentMonthlyRevenue = revenueMap.get(currentMonthName) || 0
 
@@ -83,11 +78,11 @@ export async function GET() {
         total_expiring: expiringMembers,
         total_expired: expiredMembers,
         active_pt: activePT,
-        monthly_revenue: currentMonthlyRevenue // 🌟 ADDED: Dynamic current month revenue
+        monthly_revenue: currentMonthlyRevenue 
       },
       charts: {
         status: statusChartData,
-        revenue: revenueData // 🌟 ADDED: Dynamic 7-month trend
+        revenue: revenueData 
       }
     })
   } catch (error: unknown) {
