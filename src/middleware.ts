@@ -9,8 +9,7 @@ const OWNER_ONLY_PATHS = [
   '/whatsapp',
   '/settings',
   '/device',
-  '/pt/packages',
-]
+  ]
 
 // Initialize Rate Limiter if Upstash is configured
 const redis = process.env.UPSTASH_REDIS_REST_URL ? new Redis({
