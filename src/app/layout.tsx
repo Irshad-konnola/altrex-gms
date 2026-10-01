@@ -11,6 +11,7 @@ const outfit = Outfit({
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.URL || "https://altrex-gms.vercel.app"),
   title: {
     template: "%s | Altrex GMS",
     default: "Altrex GMS | Modern Gym Management System",
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
     siteName: "Altrex GMS",
     images: [
       {
-        url: "/og-image.png",
+        url: "/logo.png",
         width: 1200,
         height: 630,
         alt: "Altrex GMS Dashboard",

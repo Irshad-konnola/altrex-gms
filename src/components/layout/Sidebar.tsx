@@ -62,7 +62,8 @@ export function Sidebar({ userRole = "owner" }: { userRole?: string }) {
       
       {/* Brand Header */}
       <div className="h-16 flex items-center px-6 border-b border-border">
-        <Dumbbell className="w-5 h-5 text-gold-500 mr-3" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Logo" className="w-8 h-8 mr-3 object-contain" />
         <span className="text-lg font-bold text-foreground tracking-tight">Altrex GMS</span>
       </div>
 

@@ -201,7 +201,7 @@ export function EditMemberModal({ member }: { member: any }) {
                     <FormItem>
                       <div className="flex items-center gap-2 mb-2">
                         <Fingerprint className="w-4 h-4 text-green-500" />
-                        <FormLabel className="text-foreground font-semibold">eSSL Face ID</FormLabel>
+                        <FormLabel className="text-foreground font-semibold">Face ID</FormLabel>
                       </div>
                       <FormControl>
                         <Input placeholder="e.g. 101" className="h-11 bg-background border-border text-foreground rounded-xl font-mono" {...field} />

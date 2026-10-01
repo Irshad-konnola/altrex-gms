@@ -4,7 +4,7 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { Dumbbell, ShieldCheck, Zap, Loader2, Eye, EyeOff } from "lucide-react"
+import { ShieldCheck, Zap, Loader2, Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
 
 import { createClient } from "@/lib/supabase/client"
@@ -75,9 +75,8 @@ export default function LoginPage() {
         
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-16">
-            <div className="bg-gradient-to-br from-gold-300 via-gold-500 to-gold-700 p-2.5 rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.3)]">
-              <Dumbbell className="w-6 h-6 text-dark-950" strokeWidth={2.5} />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="Logo" className="w-12 h-12 object-contain" />
             <span className="text-2xl font-bold tracking-tight text-foreground">Altrex GMS</span>
           </div>
           
@@ -100,7 +99,7 @@ export default function LoginPage() {
             </div>
             <div>
               <h3 className="font-semibold text-foreground text-lg">Real-time Check-ins</h3>
-              <p className="text-muted-foreground">Live eSSL face recognition feed.</p>
+              <p className="text-muted-foreground">Live face recognition feed.</p>
             </div>
           </div>
           <div className="flex items-center gap-5">
