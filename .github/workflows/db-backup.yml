@@ -1,0 +1,31 @@
+name: Automated Supabase Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Runs automatically every day at 2:00 AM UTC
+  workflow_dispatch: # Allows you to manually trigger it from the GitHub Actions tab
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Run pg_dump
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          # Dump the database to a file
+          # We use --clean to include DROP statements, making it easier to restore
+          pg_dump "$SUPABASE_DB_URL" --clean --if-exists > backup.sql
+          
+          # Compress the backup
+          tar -czf backup-$(date +'%Y-%m-%d').tar.gz backup.sql
+          
+      - name: Upload Backup to GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-database-backup-${{ github.run_id }}
+          path: backup-*.tar.gz
+          retention-days: 90 # GitHub will store this zipped backup file for 90 days
