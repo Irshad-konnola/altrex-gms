@@ -22,7 +22,7 @@ jobs:
         run: |
           # Dump the database to a file
           # We use --clean to include DROP statements, making it easier to restore
-          pg_dump "$SUPABASE_DB_URL" --clean --if-exists > backup.sql
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" --clean --if-exists > backup.sql
           
           # Compress the backup
           tar -czf backup-$(date +'%Y-%m-%d').tar.gz backup.sql
