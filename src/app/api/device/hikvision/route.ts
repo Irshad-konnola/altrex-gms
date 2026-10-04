@@ -78,7 +78,7 @@ export async function POST(request: Request) {
         await supabaseAdmin.from('attendance_logs').insert({
           member_id: member.id,
           check_in_at: new Date().toISOString(),
-          method: 'FACE',
+          method: 'face',
           device_raw: eventData
         })
         console.log(`[Hikvision] ✅ ${member.full_name} checked in!`)
