@@ -88,8 +88,9 @@ export async function POST(request: Request) {
     }
 
     // 3. REQUIRED HIKVISION RESPONSE
-    // Hikvision devices will infinite-retry unless they get this EXACT XML acknowledgment
-    const xmlResponse = `<?xml version="1.0" encoding="UTF-8"?><ResponseStatus version="2.0" xmlns="http://www.hikvision.com/ver20/XMLSchema"><requestURL>/ISAPI/Event/notification/httpHosts</requestURL><statusCode>1</statusCode><statusString>OK</statusString></ResponseStatus>`
+    // Echo the exact URL path requested
+    const urlPath = new URL(request.url).pathname
+    const xmlResponse = `<?xml version="1.0" encoding="UTF-8"?><ResponseStatus version="2.0" xmlns="http://www.hikvision.com/ver20/XMLSchema"><requestURL>${urlPath}</requestURL><statusCode>1</statusCode><statusString>OK</statusString></ResponseStatus>`
 
     return new Response(xmlResponse, { 
       status: 200,
@@ -102,7 +103,8 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     console.error('[Hikvision] Webhook Error:', error)
     // Always return the XML OK so the machine doesn't get stuck in a retry loop
-    const xmlResponse = `<?xml version="1.0" encoding="UTF-8"?><ResponseStatus version="2.0" xmlns="http://www.hikvision.com/ver20/XMLSchema"><requestURL>/ISAPI/Event/notification/httpHosts</requestURL><statusCode>1</statusCode><statusString>OK</statusString></ResponseStatus>`
+    const urlPath = new URL(request.url).pathname
+    const xmlResponse = `<?xml version="1.0" encoding="UTF-8"?><ResponseStatus version="2.0" xmlns="http://www.hikvision.com/ver20/XMLSchema"><requestURL>${urlPath}</requestURL><statusCode>1</statusCode><statusString>OK</statusString></ResponseStatus>`
     return new Response(xmlResponse, { 
         status: 200, 
         headers: { 'Content-Type': 'application/xml', 'Connection': 'close' } 

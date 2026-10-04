@@ -1,31 +1,15 @@
-// scratch_check_db2.ts
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing env vars')
-  process.exit(1)
-}
-
-const supabaseAdmin = createClient(supabaseUrl, supabaseKey)
+const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 async function checkEvents() {
-  console.log('Checking device_events...')
-  const { data, error } = await supabaseAdmin
-    .from('device_events')
-    .select('*')
-    .limit(5)
-
-  if (error) {
-    console.error('Error fetching:', error)
-  } else {
-    console.log('Recent events:', JSON.stringify(data, null, 2))
-  }
+  const { data, error } = await supabaseAdmin.from('device_events').select('*').order('received_at', { ascending: false }).limit(200)
+  if (error) return console.error(error)
+  const found = data.filter(r => JSON.stringify(r.raw_payload).includes('employeeNo') || JSON.stringify(r.raw_payload).includes('arif'));
+  console.log('Found:', found.length ? JSON.stringify(found, null, 2) : 'No employee info found in last 200')
 }
 
 checkEvents()
