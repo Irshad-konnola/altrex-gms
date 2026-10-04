@@ -28,7 +28,7 @@ export async function POST(request: Request) {
            eventData = JSON.parse(match[1])
         } else {
            // Fallback regex
-           const fallbackMatch = rawText.match(/({.*"ipAddress".*})/is)
+           const fallbackMatch = rawText.match(/({[\s\S]*"ipAddress"[\s\S]*})/i)
            if (fallbackMatch && fallbackMatch[1]) {
              eventData = JSON.parse(fallbackMatch[1])
            } else {
