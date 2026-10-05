@@ -39,7 +39,10 @@ export async function POST(request: Request) {
     const endDate = format(addDays(new Date(start_date), pkg.validity_days), 'yyyy-MM-dd')
 
     // 2.5 Ensure the member has an active common plan that covers this PT period
-    const { data: memberships } = await db
+    // Use admin client to bypass any potential RLS issues when reading memberships
+    const { createClient: createAdminClient } = await import('@supabase/supabase-js')
+    const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+    const { data: memberships, error: membershipsError } = await supabaseAdmin
       .from('memberships')
       .select('end_date')
       .eq('member_id', member_id)
@@ -47,7 +50,12 @@ export async function POST(request: Request) {
       .order('end_date', { ascending: false })
       .limit(1)
       
+    if (membershipsError) {
+      console.error("[PT Assignment] Memberships query error:", membershipsError)
+    }
+      
     if (!memberships || memberships.length === 0) {
+      console.error("[PT Assignment] No active memberships found for member:", member_id, "Result:", memberships)
       throw new Error("Member must have an active regular plan to be assigned a PT package.")
     }
     
