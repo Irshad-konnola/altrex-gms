@@ -88,14 +88,15 @@ export async function POST(request: Request) {
     // NEW: Log partial or full payment if provided
     const { amount_paid, payment_method } = body
     if (amount_paid && Number(amount_paid) > 0) {
-      const { data: { user } } = await supabase.auth.getUser()
-      await db.from('payments').insert({
+      // Use supabaseAdmin to guarantee the payment is inserted even if user session is lost
+      await supabaseAdmin.from('payments').insert({
         member_id,
         amount: Number(amount_paid),
         method: payment_method || 'cash',
         status: 'paid',
         description: `PT Package: ${pkg.name}`,
-        recorded_by: user?.id
+        // If we want to record who did it, we could try getting the user, but we'll default to null if missing
+        recorded_by: (await supabase.auth.getUser()).data.user?.id || null
       })
     }
 
