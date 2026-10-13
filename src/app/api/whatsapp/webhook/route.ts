@@ -116,8 +116,9 @@ export async function POST(request: Request) {
     }
 
     // Send the reply back to the user
-    if (process.env.WHATSAPP_PHONE_ID && process.env.WHATSAPP_ACCESS_TOKEN) {
-      const WA_API_URL = `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_ID}/messages`
+    const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || process.env.WHATSAPP_PHONE_ID
+    if (phoneId && process.env.WHATSAPP_ACCESS_TOKEN) {
+      const WA_API_URL = `https://graph.facebook.com/v19.0/${phoneId}/messages`
       
       await fetch(WA_API_URL, {
         method: 'POST',
