@@ -149,7 +149,7 @@ export function EditMemberModal({ member }: { member: any }) {
       } else {
         toast.error(`Error: ${result.error}`)
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong while updating the profile.")
     } finally {
       setIsSubmitting(false)

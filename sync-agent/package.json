@@ -1,0 +1,16 @@
+{
+  "name": "altrex-sync-agent",
+  "version": "1.0.0",
+  "description": "Local PC Agent for Altrex GMS Hikvision Sync",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test-connection.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.4.5",
+    "urllib": "^4.9.0"
+  }
+}

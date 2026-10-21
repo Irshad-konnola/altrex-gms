@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -24,14 +24,21 @@
 .DS_Store
 *.pem
 
-# debug
+# debug & logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# scratch & temporary test files
+scratch_*.ts
+scratch_*.js
+*.scratch.*
 
 # vercel
 .vercel
@@ -42,3 +49,4 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+

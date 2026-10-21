@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils/fromatCurrency'
+import { formatCurrency } from '@/lib/utils/formatCurrency'
 import { cn } from '@/lib/utils'
 
 interface StatCardProps {

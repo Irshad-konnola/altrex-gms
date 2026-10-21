@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts'
-import { formatCurrency } from '@/lib/utils/fromatCurrency'
+import { formatCurrency } from '@/lib/utils/formatCurrency'
 import { Loader2 } from 'lucide-react'
 
 type DailyRevenue = {
