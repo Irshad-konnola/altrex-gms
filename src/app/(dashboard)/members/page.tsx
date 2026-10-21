@@ -28,9 +28,9 @@ export default async function MembersPage({
     if (!matchesSearch) return false
     
     switch (activeTab) {
-      case "Active": return member.status === "active"
-      case "Expiring": return member.status === "expiring"
-      case "Expired": return member.status === "expired"
+      case "Active": return member.status === "active" || member.status === "expiring"
+      case "Expiring": return member.status === "expiring" || (member.days_left !== null && member.days_left !== undefined && member.days_left > 0 && member.days_left <= 7)
+      case "Expired": return member.status === "expired" || member.days_left === 0
       case "PT Members": return member.is_pt_member
       case "Due Pending": return member.due_amount && member.due_amount > 0
       default: return true

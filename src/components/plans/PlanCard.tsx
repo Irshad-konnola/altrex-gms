@@ -2,7 +2,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils/fromatCurrency'
+import { formatCurrency } from '@/lib/utils/formatCurrency'
 import { MembershipPlan } from '@/hooks/usePlans'
 import { cn } from '@/lib/utils'
 

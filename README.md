@@ -1,77 +1,184 @@
 <div align="center">
   <img src="public/logo.png" alt="Altrex GMS Logo" width="120" />
   <h1>Altrex GMS</h1>
-  <p><strong>Manage your gym with absolute precision.</strong></p>
-  <p>The complete, AI-assisted operating system built exclusively for Altrex Fitness.</p>
+  <p><strong>Next-Generation Operating System for Modern Gyms & Fitness Facilities</strong></p>
+
+  [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat&logo=next.js)](https://nextjs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
+  [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat&logo=supabase)](https://supabase.com/)
+  [![CI Pipeline](https://github.com/your-username/altrex-gms/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/altrex-gms/actions/workflows/ci.yml)
+
+  <br />
+
+  [Explore Architecture (ABOUT.md)](./ABOUT.md) • [Database Guide (supabase/)](./supabase/README.md) • [Biometric Sync Agent](./sync-agent/README.md) • [Contribution Standards](./CONTRIBUTING.md)
 </div>
 
 ---
 
 ## 🚀 Overview
 
-**Altrex GMS (Gym Management System)** is a modern, full-stack application designed to completely automate and streamline operations for Altrex Fitness. From automated WhatsApp reminders to real-time face recognition check-ins, Altrex GMS eliminates manual front-desk work.
+**Altrex GMS (Gym Management System)** is a comprehensive, production-ready full-stack application built to automate front-desk operations, member lifecycle management, biometric access control, online billing, and customer communication for **Altrex Fitness**.
 
-## ✨ Core Features
+By integrating **Supabase PostgreSQL**, **Hikvision Biometric Face Terminals**, **Razorpay Payments**, and the **Meta WhatsApp Cloud API**, Altrex GMS eliminates spreadsheets and manual administrative tasks.
 
-*   👥 **Member Management**: Complete profiles, body metrics (height/weight), and active plan tracking.
-*   💳 **Automated Payments**: Integrated with Razorpay for seamless membership renewals and due-amount calculations.
-*   📱 **WhatsApp Automation**: Automated birthday wishes, renewal reminders, payment receipts, and inactivity alerts.
-*   🏋️ **Personal Training (PT)**: Dedicated modules for assigning and tracking PT packages and sessions.
-*   📸 **Smart Attendance**: Real-time check-ins featuring a live face-recognition feed.
-*   🛡️ **Role-Based Access**: Secure dashboards separated for **Gym Owners** (full analytics) and **Front Desk Staff** (daily operations).
-*   📊 **Analytics & Reports**: Visual revenue tracking, upcoming expirations, and active member stats.
+For an in-depth breakdown of features, domain modules, and architectural decisions, see [**ABOUT.md**](./ABOUT.md).
+
+---
+
+## ✨ Key Capabilities
+
+* 👥 **Member Management**: Detailed profiles, health & biometric records (height, weight, automated BMI), and plan duration tracking.
+* 📸 **Smart Attendance**: Real-time check-in stream powered by Hikvision face-recognition terminals and staff manual check-in with cooldown guards.
+* 💳 **Automated Billing & Invoicing**: Razorpay payment link generation, instant WhatsApp receipts, overdue balance reminders, and PDF invoice downloads.
+* 🏋️ **Personal Training (PT)**: Manage trainers, configure session-based PT packages, and track active client session deductions.
+* 📱 **WhatsApp Automation**: Automated welcome messages, renewal reminders (7-day, 3-day, 1-day), birthday greetings, inactivity alerts, and nightly owner executive summaries.
+* 🛡️ **Role-Based Access (RBAC)**: Distinct permissions for **Gym Owners** (revenue charts, financial metrics, package configurations) and **Front Desk Staff** (daily check-ins and member registration).
+* 🔄 **Automated Cloud Backups**: Nightly `pg_dump` database exports to GitHub Artifacts with 90-day retention.
+
+---
+
+## 📂 Project Structure
+
+```
+altrex-gms/
+├── .github/
+│   └── workflows/              # CI pipeline, automated daily crons & database backup workflows
+├── public/                     # Static assets, branding logos, manifest, and icons
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── (auth)/             # Login & authentication routes
+│   │   ├── (dashboard)/        # Protected operational pages (Members, Attendance, Payments, PT, Plans)
+│   │   └── api/                # API routes for webhooks (Razorpay, WhatsApp), devices & crons
+│   ├── components/             # Modular React UI components
+│   │   ├── attendance/         # Real-time attendance feed & manual check-in
+│   │   ├── dashboard/          # Analytics stat cards & revenue charts
+│   │   ├── members/            # Member profile, table, renewal, and edit modals
+│   │   ├── payments/           # Invoicing tables, overdue dues, and Razorpay links
+│   │   ├── plans/              # Membership plan cards and creation forms
+│   │   ├── pt/                 # Personal training assignment and session deductions
+│   │   └── ui/                 # Reusable accessible UI primitives (buttons, dialogs, sheets)
+│   ├── hooks/                  # React Query hooks for client-side data fetching
+│   ├── lib/                    # Core utilities & API integrations
+│   │   ├── essl/               # Biometric raw data parser
+│   │   ├── razorpay/           # Razorpay SDK initialization
+│   │   ├── supabase/           # SSR and client Supabase client factories
+│   │   ├── utils/              # Currency formatting, Tailwind cn helper, PDF invoice generator
+│   │   ├── validations/        # Zod validation schemas
+│   │   └── whatsapp/           # Meta WhatsApp Cloud API client
+│   └── types/                  # TypeScript interface and database definitions
+├── supabase/
+│   ├── schema.sql              # Complete consolidated database schema, RLS, and indexes
+│   ├── scripts/                # Utility SQL scripts (set_owner.sql, reset_test_data.sql)
+│   └── README.md               # Supabase setup and administration instructions
+├── sync-agent/                 # Companion daemon for local Hikvision Biometric machine sync
+├── .env.example                # Documented environment variable template
+├── ABOUT.md                    # Detailed architectural and domain documentation
+├── CONTRIBUTING.md             # Contribution guidelines, conventional commits & linting
+└── README.md                   # This file
+```
+
+---
 
 ## 🛠️ Tech Stack
 
-Built with modern web technologies for maximum performance, security, and scalability:
+* **Frontend**: Next.js 15 (App Router, Server Actions), React 19, Tailwind CSS v4, Lucide Icons
+* **Backend**: Next.js Server Actions & API Routes
+* **Database & Auth**: Supabase (PostgreSQL 17, Row Level Security, Storage Buckets)
+* **Data Fetching**: TanStack React Query v5
+* **Payment Processing**: Razorpay API & Webhook HMAC Verification
+* **Customer Messaging**: Meta WhatsApp Business Cloud API
+* **Error Tracking**: Sentry
+* **Automation**: GitHub Actions (Scheduled Daily Crons & Automated Backups)
 
-*   **Frontend:** [Next.js](https://nextjs.org/) (App Router), React, Tailwind CSS, Lucide Icons
-*   **Backend:** Next.js Server Actions & API Routes
-*   **Database & Auth:** [Supabase](https://supabase.com/) (PostgreSQL, Row Level Security, Storage)
-*   **Payments:** Razorpay API
-*   **Notifications:** Meta WhatsApp Business API
-*   **Error Tracking:** [Sentry](https://sentry.io/)
-*   **Deployment:** Netlify / Vercel
+---
 
-## 📦 Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-Ensure you have Node.js (v18+) installed.
+* **Node.js**: v18.x or v20.x or higher
+* **npm**: v9.x or higher
+* A free or paid **Supabase** account
+* A **Razorpay** account (for payments)
+* A **Meta Developer** account with WhatsApp Cloud API configured
 
-### Installation
+### Step 1: Clone the Repository
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/altrex-gms.git
-   cd altrex-gms
-   ```
+```bash
+git clone https://github.com/your-username/altrex-gms.git
+cd altrex-gms
+```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+### Step 2: Install Dependencies
 
-3. **Set up Environment Variables**
-   Create a `.env.local` file in the root directory and add the necessary keys (Supabase, Razorpay, WhatsApp, Sentry, etc.).
+```bash
+npm install
+```
 
-4. **Run the Development Server**
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) to view the application.
+### Step 3: Configure Environment Variables
 
-## 🛡️ Architecture & Security
+Create your local environment file by copying the template:
 
-*   **Database Security:** Powered by Supabase Row Level Security (RLS) policies to ensure data isolation.
-*   **Automated Backups:** Scheduled daily GitHub Actions (`db-backup.yml`) utilizing `pg_dump` to securely export and archive the PostgreSQL database.
-*   **Strict Type Checking:** Enforced by TypeScript and Zod validation schemas.
+```bash
+cp .env.example .env.local
+```
+
+Open `.env.local` and fill in your keys:
+* Supabase project URL, Anon Key, and Service Role Key.
+* Razorpay Key ID and Secret.
+* Meta WhatsApp Cloud API credentials.
+* Cron Bearer Secret.
+
+See [`.env.example`](./.env.example) for detailed comments on each variable.
+
+### Step 4: Initialize the Database
+
+1. Open your [Supabase SQL Editor](https://supabase.com/dashboard).
+2. Run the script in [`supabase/schema.sql`](./supabase/schema.sql).
+3. To assign owner permissions to your account, run [`supabase/scripts/set_owner.sql`](./supabase/scripts/set_owner.sql).
+
+### Step 5: Start the Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 📜 Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Launches the Next.js local development server with Turbopack |
+| `npm run build` | Compiles the production build |
+| `npm run start` | Starts the production server |
+| `npm run lint` | Runs ESLint across all source files |
+| `npx tsc --noEmit` | Runs full TypeScript static type checking |
+
+---
+
+## 🔄 Daily Automation & Crons
+
+Automations are triggered via GitHub Actions workflows in `.github/workflows/crons.yml`:
+
+| Time (IST) | Trigger Endpoint | Purpose |
+|---|---|---|
+| **5:40 AM** | `/api/cron/update-statuses` | Re-evaluates active vs expired memberships |
+| **9:00 AM** | `/api/cron/renewal-reminders` | Sends WhatsApp renewal reminders |
+| **9:30 AM** | `/api/cron/inactivity-check` | Re-engages members absent for 7+ days |
+| **9:30 PM** | `/api/cron/owner-summary` | Delivers end-of-day revenue & footfall summary to owner |
+
+---
 
 ## 🤝 Contributing
 
-This is a proprietary system built for Altrex Fitness. All commits must pass strict ESLint formatting and TypeScript compilation checks via Husky pre-commit hooks before being pushed to production.
+We welcome contributions! Please review [**CONTRIBUTING.md**](./CONTRIBUTING.md) for branch naming standards, TypeScript requirements, and conventional commit rules enforced by Husky and Commitlint.
 
 ---
-<div align="center">
-  <i>Built for the future of fitness management.</i>
-</div>
+
+## 📄 License
+
+Proprietary software built exclusively for **Altrex Fitness**. All rights reserved.

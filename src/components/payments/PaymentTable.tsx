@@ -1,5 +1,5 @@
 import { PaymentWithDetails } from '@/hooks/usePayments'
-import { formatCurrency } from '@/lib/utils/fromatCurrency'
+import { formatCurrency } from '@/lib/utils/formatCurrency'
 import { format } from 'date-fns'
 import { Download } from 'lucide-react'
 import { generatePaymentReceipt } from '@/lib/utils/pdfGenerator'

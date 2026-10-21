@@ -113,7 +113,13 @@ export async function getMembers() {
         }
 
         if (computedStatus !== "archived") {
-           computedStatus = daysLeft > 0 ? "active" : "expired";
+          if (daysLeft === 0) {
+            computedStatus = "expired";
+          } else if (daysLeft <= 7) {
+            computedStatus = "expiring";
+          } else {
+            computedStatus = "active";
+          }
         }
       }
     }
@@ -282,7 +288,7 @@ export async function createMemberAction(formData: any) {
           ],
         });
         console.log(`✅ WhatsApp Welcome message sent to ${cleanPhone}`);
-      } catch (waError) {}
+      } catch {}
     }
     if (cleanPhone) {
       try {
@@ -302,7 +308,7 @@ export async function createMemberAction(formData: any) {
           ],
         });
         console.log(`✅ WhatsApp Receipt sent to ${cleanPhone}`);
-      } catch (waError) {}
+      } catch {}
     }
 
     revalidatePath("/members");
@@ -562,6 +568,7 @@ export async function renewMembershipAction(memberId: string, formData: any) {
   const supabaseAuthClient = await createClient();
   const supabaseAdmin = getAdminClient();
   const { data: { user } } = await supabaseAuthClient.auth.getUser();
+  if (!user) return { success: false, error: "Unauthorized" };
 
   try {
     const { data: planData }: any = await supabaseAdmin
@@ -642,7 +649,7 @@ export async function renewMembershipAction(memberId: string, formData: any) {
           ],
         });
       }
-    } catch (waError) {}
+    } catch {}
 
     revalidatePath("/members");
     revalidatePath(`/members/${memberId}`);
@@ -692,7 +699,7 @@ export async function recordPaymentAction(memberId: string, formData: any) {
           ],
         });
       }
-    } catch (waError) {}
+    } catch {}
 
     revalidatePath(`/members/${memberId}`);
     return { success: true };
