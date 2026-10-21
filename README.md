@@ -7,7 +7,7 @@
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
   [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat&logo=supabase)](https://supabase.com/)
-  [![CI Pipeline](https://github.com/your-username/altrex-gms/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/altrex-gms/actions/workflows/ci.yml)
+  [![CI Pipeline](https://github.com/irshad-konnola/altrex-gms/actions/workflows/ci.yml/badge.svg)](https://github.com/irshad-konnola/altrex-gms/actions/workflows/ci.yml)
 
   <br />
 
