@@ -80,7 +80,7 @@ class HikvisionClient {
         searchID: "1",
         searchResultPosition: 0,
         maxResults: 1,
-        employeeNo: String(employeeNo)
+        EmployeeNoList: [{ employeeNo: String(employeeNo) }]
       }
     };
 

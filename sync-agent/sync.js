@@ -105,6 +105,13 @@ async function syncAllMembers() {
       planSummary = 'No membership history';
     }
 
+    // Safety check: Hikvision requires beginTime <= endTime
+    if (new Date(beginTime).getTime() > new Date(endTime).getTime()) {
+      const endD = new Date(endTime);
+      endD.setDate(endD.getDate() - 30);
+      beginTime = endD.toISOString().split('T')[0] + 'T00:00:00';
+    }
+
     try {
       const result = await hikClient.setUserValidity({
         employeeNo,
