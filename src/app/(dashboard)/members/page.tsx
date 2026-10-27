@@ -1,5 +1,3 @@
-// src/app/(dashboard)/members/page.tsx
- 
 import Link from "next/link"
 import { UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,21 +10,63 @@ import { getMembers } from "./actions"
 export default async function MembersPage({ 
   searchParams 
 }: { 
-  searchParams: Promise<{ query?: string; tab?: string; sort?: string; page?: string }> 
+  searchParams: Promise<{ query?: string; tab?: string; sort?: string; page?: string; plan?: string }> 
 }) {
   const resolvedParams = await searchParams
   const search = resolvedParams.query?.toLowerCase() || ""
   const activeTab = resolvedParams.tab || "All"
   const sortOption = resolvedParams.sort || ""
+  const planFilter = resolvedParams.plan || ""
 
   const members = await getMembers()
 
+  // Summary counts for frontdesk staff
+  const totalCount = members.filter((m: any) => m.status !== "archived").length
+  const activeCount = members.filter((m: any) => m.status === "active" || m.status === "expiring").length
+  const expiringCount = members.filter((m: any) => m.status === "expiring" || (m.days_left !== null && m.days_left !== undefined && m.days_left > 0 && m.days_left <= 7)).length
+  const expiredCount = members.filter((m: any) => m.status === "expired" || m.days_left === 0).length
+  const ptCount = members.filter((m: any) => m.is_pt_member).length
+  const duePendingCount = members.filter((m: any) => m.due_amount && m.due_amount > 0).length
+
+  const tabCounts = {
+    All: totalCount,
+    Active: activeCount,
+    Expiring: expiringCount,
+    Expired: expiredCount,
+    "PT Members": ptCount,
+    "Due Pending": duePendingCount
+  }
+
+  // Extract distinct plan names for the plan filter dropdown
+  const availablePlans = Array.from(
+    new Set(
+      members
+        .map((m: any) => {
+          if (!m.plan_name || m.plan_name === "Unknown Plan" || m.plan_name === "No Plan") return null
+          return m.plan_name.replace(" (Renewed)", "").trim()
+        })
+        .filter(Boolean) as string[]
+    )
+  ).sort()
+
   const filteredMembers = members.filter((member: any) => {
-    const matchesSearch = member.full_name.toLowerCase().includes(search) || 
-                          member.phone.includes(search)
+    // 1. Text search by Name, Phone, OR Plan Name
+    const matchesSearch = 
+      member.full_name?.toLowerCase().includes(search) || 
+      member.phone?.includes(search) ||
+      (member.plan_name && member.plan_name.toLowerCase().includes(search))
     
     if (!matchesSearch) return false
+
+    // 2. Specific Plan filter dropdown
+    if (planFilter && planFilter !== "all") {
+      const memberPlan = (member.plan_name || "").toLowerCase()
+      if (!memberPlan.includes(planFilter.toLowerCase())) {
+        return false
+      }
+    }
     
+    // 3. Tab filter
     switch (activeTab) {
       case "Active": return member.status === "active" || member.status === "expiring"
       case "Expiring": return member.status === "expiring" || (member.days_left !== null && member.days_left !== undefined && member.days_left > 0 && member.days_left <= 7)
@@ -46,7 +86,6 @@ export default async function MembersPage({
     } else if (sortOption === "name_desc") {
       return b.full_name.localeCompare(a.full_name)
     }
-    // Default is newest first, which is how getMembers already returns them (order("created_at", { ascending: false }))
     return 0
   })
 
@@ -59,6 +98,7 @@ export default async function MembersPage({
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       
+      {/* Header and Add Member Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground tracking-tight">Members</h1>
@@ -73,8 +113,15 @@ export default async function MembersPage({
         </Link>
       </div>
 
-      {/* New Client-side Filter Component */}
-      <MemberFilters initialSearch={search} activeTab={activeTab} initialSort={sortOption} />
+      {/* Filter Component with Plan Filter and Tab Counts */}
+      <MemberFilters 
+        initialSearch={search} 
+        activeTab={activeTab} 
+        initialSort={sortOption} 
+        initialPlan={planFilter}
+        availablePlans={availablePlans}
+        tabCounts={tabCounts}
+      />
 
       <div className="hidden md:block">
         <MemberTable members={paginatedMembers} />

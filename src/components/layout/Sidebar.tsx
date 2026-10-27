@@ -1,6 +1,6 @@
 "use client"
-import { useState } from "react"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -12,10 +12,13 @@ import {
   MessageCircle, 
   Dumbbell,
   BarChart3,
-  LogOut
+  LogOut,
+  PanelLeftClose,
+  PanelLeft
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { useSidebar } from "./DashboardShell"
 import {
   Dialog,
   DialogContent,
@@ -35,8 +38,6 @@ const routes = [
   { href: "/whatsapp", label: "WhatsApp", icon: MessageCircle, role: "owner" },
   { href: "/pt", label: "Personal Training", icon: Dumbbell, role: "both" },
   { href: "/reports", label: "Reports", icon: BarChart3, role: "owner" },
-  // { href: "/device", label: "eSSL Device", icon: MonitorSmartphone, role: "owner" },
-  // { href: "/settings", label: "Settings", icon: Settings, role: "owner" },
 ]
 
 export function Sidebar({ userRole = "owner" }: { userRole?: string }) {
@@ -44,6 +45,7 @@ export function Sidebar({ userRole = "owner" }: { userRole?: string }) {
   const router = useRouter()
   const supabase = createClient()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const { isCollapsed, toggleSidebar } = useSidebar()
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -58,17 +60,45 @@ export function Sidebar({ userRole = "owner" }: { userRole?: string }) {
   )
 
   return (
-    <div className="hidden lg:flex w-[240px] flex-col bg-background border-r border-border h-screen fixed top-0 left-0">
+    <aside 
+      className={cn(
+        "hidden lg:flex flex-col bg-background border-r border-border h-screen fixed top-0 left-0 z-40 transition-all duration-300 ease-in-out",
+        isCollapsed ? "w-[72px]" : "w-[240px]"
+      )}
+    >
       
       {/* Brand Header */}
-      <div className="h-16 flex items-center px-6 border-b border-border">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Logo" className="w-8 h-8 mr-3 object-contain" />
-        <span className="text-lg font-bold text-foreground tracking-tight">Altrex GMS</span>
+      <div className={cn(
+        "h-16 flex items-center border-b border-border transition-all duration-300",
+        isCollapsed ? "justify-center px-2" : "justify-between px-5"
+      )}>
+        <Link href={userRole === "owner" ? "/dashboard" : "/members"} className="flex items-center min-w-0 group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            className="w-8 h-8 object-contain shrink-0 group-hover:scale-105 transition-transform" 
+          />
+          {!isCollapsed && (
+            <span className="text-lg font-bold text-foreground tracking-tight ml-3 truncate animate-in fade-in duration-200">
+              Altrex GMS
+            </span>
+          )}
+        </Link>
+
+        {!isCollapsed && (
+          <button
+            onClick={toggleSidebar}
+            className="text-muted-foreground hover:text-gold-500 hover:bg-card p-1.5 rounded-lg transition-colors"
+            title="Collapse sidebar"
+          >
+            <PanelLeftClose className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Navigation Links */}
-      <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+      <nav className="flex-1 overflow-y-auto py-5 px-2.5 space-y-1.5 no-scrollbar">
         {visibleRoutes.map((route) => {
           const isActive = pathname.startsWith(route.href)
           
@@ -76,26 +106,75 @@ export function Sidebar({ userRole = "owner" }: { userRole?: string }) {
             <Link
               key={route.href}
               href={route.href}
+              title={isCollapsed ? route.label : undefined}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                "flex items-center rounded-xl text-sm font-medium transition-all duration-200 relative group",
+                isCollapsed 
+                  ? "justify-center h-11 w-11 mx-auto px-0" 
+                  : "gap-3 px-3.5 py-2.5",
                 isActive 
-                  ? "bg-gold-500/10 text-gold-500 border-l-2 border-gold-500 rounded-l-none" 
+                  ? isCollapsed 
+                    ? "bg-gold-500/15 text-gold-400 ring-1 ring-gold-500/40 shadow-[0_0_12px_rgba(234,179,8,0.2)]"
+                    : "bg-gold-500/10 text-gold-500 border-l-2 border-gold-500 rounded-l-none font-semibold"
                   : "text-muted-foreground hover:text-foreground hover:bg-card"
               )}
             >
-              <route.icon className={cn("w-5 h-5", isActive ? "text-gold-500" : "text-muted-foreground")} />
-              {route.label}
+              <route.icon className={cn(
+                "w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110", 
+                isActive ? "text-gold-500" : "text-muted-foreground"
+              )} />
+              
+              {!isCollapsed && (
+                <span className="truncate animate-in fade-in duration-200">
+                  {route.label}
+                </span>
+              )}
+
+              {/* Tooltip on Collapsed Mode */}
+              {isCollapsed && (
+                <span className="fixed left-[76px] px-2.5 py-1 bg-popover text-popover-foreground border border-border text-xs font-semibold rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
+                  {route.label}
+                </span>
+              )}
             </Link>
           )
         })}
-      </div>
+      </nav>
 
-      {/* Logout Button Footer */}
-      <div className="p-4 border-t border-border">
+      {/* Footer / Toggle & Sign Out */}
+      <div className="p-3 border-t border-border space-y-1">
+        {/* Quick Expand Button when collapsed */}
+        {isCollapsed && (
+          <button
+            onClick={toggleSidebar}
+            className="flex items-center justify-center h-11 w-11 mx-auto rounded-xl text-muted-foreground hover:text-gold-500 hover:bg-card transition-colors group relative"
+            title="Expand sidebar"
+          >
+            <PanelLeft className="w-5 h-5" />
+            <span className="fixed left-[76px] px-2.5 py-1 bg-popover text-popover-foreground border border-border text-xs font-semibold rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
+              Expand Sidebar
+            </span>
+          </button>
+        )}
+
         <Dialog>
-          <DialogTrigger className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-card transition-colors">
-            <LogOut className="w-5 h-5 text-muted-foreground" />
-            Sign Out
+          <DialogTrigger 
+            title={isCollapsed ? "Sign Out" : undefined}
+            className={cn(
+              "flex items-center rounded-xl text-sm font-medium text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors group relative",
+              isCollapsed 
+                ? "justify-center h-11 w-11 mx-auto px-0" 
+                : "gap-3 px-3.5 py-2.5 w-full"
+            )}
+          >
+            <LogOut className="w-5 h-5 shrink-0 group-hover:text-red-400 transition-colors" />
+            {!isCollapsed && <span className="truncate">Sign Out</span>}
+            
+            {isCollapsed && (
+              <span className="fixed left-[76px] px-2.5 py-1 bg-popover text-popover-foreground border border-border text-xs font-semibold rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
+                Sign Out
+              </span>
+            )}
           </DialogTrigger>
           <DialogContent className="bg-card border border-border/50 text-foreground sm:max-w-md rounded-2xl shadow-2xl dark:shadow-[0_8px_30px_rgba(234,179,8,0.1)]">
             <DialogHeader>
@@ -120,6 +199,6 @@ export function Sidebar({ userRole = "owner" }: { userRole?: string }) {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </aside>
   )
 }

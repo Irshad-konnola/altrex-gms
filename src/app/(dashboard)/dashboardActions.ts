@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { startOfMonth, endOfMonth, subDays, subMonths, format, eachDayOfInterval } from 'date-fns'
+import { startOfMonth, endOfMonth, subDays, subMonths, addDays, format, eachDayOfInterval } from 'date-fns'
 import { DateRange } from '@/hooks/useDashboardStats'
 
 export async function getDashboardStatsAction(dateRange: DateRange = 'month') {
@@ -10,11 +10,31 @@ export async function getDashboardStatsAction(dateRange: DateRange = 'month') {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { count: totalMembers } = await supabase.from('members').select('*', { count: 'exact', head: true }).neq('status', 'archived')
-  const { count: activeMembers } = await supabase.from('members').select('*', { count: 'exact', head: true }).eq('status', 'active')
-  const { count: expiringSoon } = await supabase.from('members').select('*', { count: 'exact', head: true }).eq('status', 'expiring')
-
   const today = new Date()
+  const todayStr = format(today, 'yyyy-MM-dd')
+  const in7DaysStr = format(addDays(today, 7), 'yyyy-MM-dd')
+
+  const { count: totalMembers } = await supabase
+    .from('members')
+    .select('*', { count: 'exact', head: true })
+    .neq('status', 'archived')
+
+  // Count active members (active or expiring)
+  const { count: activeMembers } = await supabase
+    .from('members')
+    .select('*', { count: 'exact', head: true })
+    .in('status', ['active', 'expiring'])
+
+  // Expiring soon: memberships ending in the next 7 days (today through today + 7 days)
+  const { data: expiringMemberships } = await supabase
+    .from('memberships')
+    .select('member_id')
+    .in('status', ['active', 'expiring'])
+    .gte('end_date', todayStr)
+    .lte('end_date', in7DaysStr)
+
+  const uniqueExpiringMemberIds = new Set(expiringMemberships?.map((m: any) => m.member_id) || [])
+  const expiringSoon = uniqueExpiringMemberIds.size
   let startDate: Date
   let endDate: Date = today
   let prevStartDate: Date

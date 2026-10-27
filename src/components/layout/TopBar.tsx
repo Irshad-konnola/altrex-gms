@@ -1,11 +1,15 @@
 // src/components/layout/TopBar.tsx
 "use client"
 
-import { User } from "lucide-react"
+import { User, PanelLeft, PanelLeftClose } from "lucide-react"
 import { MobileMenu } from "@/components/layout/MobileMenu"
 import { ThemeToggle } from "./ThemeToggle"
+import { useSidebar } from "./DashboardShell"
+import { Button } from "@/components/ui/button"
 
 export function TopBar({ userRole }: { userRole: string }) {
+  const { isCollapsed, toggleSidebar } = useSidebar()
+
   return (
     <header className="h-16 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
       
@@ -13,6 +17,19 @@ export function TopBar({ userRole }: { userRole: string }) {
       <div className="lg:hidden flex items-center gap-3">
         <MobileMenu userRole={userRole} />
         <span className="text-lg font-bold text-foreground tracking-tight">Altrex</span>
+      </div>
+
+      {/* Desktop Sidebar Toggle Button */}
+      <div className="hidden lg:flex items-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="h-9 w-9 text-muted-foreground hover:text-gold-500 hover:bg-card transition-colors rounded-xl"
+          title={isCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
+        >
+          {isCollapsed ? <PanelLeft className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+        </Button>
       </div>
 
       {/* Empty spacer to push right-side content to the edge on desktop */}

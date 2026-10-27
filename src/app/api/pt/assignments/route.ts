@@ -42,11 +42,14 @@ export async function POST(request: Request) {
     // Use admin client to bypass any potential RLS issues when reading memberships
     const { createClient: createAdminClient } = await import('@supabase/supabase-js')
     const supabaseAdmin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+    const todayStr = format(new Date(), 'yyyy-MM-dd')
+
     const { data: memberships, error: membershipsError } = await supabaseAdmin
       .from('memberships')
-      .select('end_date')
+      .select('id, start_date, end_date, status')
       .eq('member_id', member_id)
-      .eq('status', 'active')
+      .neq('status', 'renewed')
+      .gte('end_date', todayStr)
       .order('end_date', { ascending: false })
       .limit(1)
       
@@ -58,9 +61,17 @@ export async function POST(request: Request) {
       console.error("[PT Assignment] No active memberships found for member:", member_id, "Result:", memberships)
       throw new Error("Member must have an active regular plan to be assigned a PT package.")
     }
+
+    const currentMembership = memberships[0]
+
+    // If membership was marked 'upcoming' but start_date has arrived, activate it
+    if (currentMembership.status === 'upcoming' && currentMembership.start_date <= todayStr) {
+      await supabaseAdmin.from('memberships').update({ status: 'active' }).eq('id', currentMembership.id)
+      await supabaseAdmin.from('members').update({ status: 'active' }).eq('id', member_id)
+    }
     
-    if (new Date(endDate) > new Date(memberships[0].end_date)) {
-      throw new Error(`The PT package validity (${endDate}) exceeds their regular plan validity (${memberships[0].end_date}). Please renew their regular plan first.`)
+    if (new Date(endDate) > new Date(currentMembership.end_date)) {
+      throw new Error(`The PT package validity (${endDate}) exceeds their regular plan validity (${currentMembership.end_date}). Please renew their regular plan first.`)
     }
 
     // 3. Create the assignment

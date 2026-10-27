@@ -56,8 +56,9 @@ export function MemberTable({ members }: { members: MemberRow[] }) {
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-xl border border-border bg-background shadow-sm">
-      <table className="w-full text-sm text-left">
+    <div className="w-full overflow-hidden rounded-2xl border border-border bg-background shadow-sm">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left">
         <thead className="text-xs text-muted-foreground uppercase bg-card border-b border-border">
           <tr>
             <th className="px-6 py-4 font-bold tracking-wider">#</th>
@@ -141,6 +142,7 @@ export function MemberTable({ members }: { members: MemberRow[] }) {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

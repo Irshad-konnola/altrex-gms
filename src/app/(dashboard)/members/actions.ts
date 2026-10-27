@@ -208,12 +208,11 @@ export async function createMemberAction(formData: any) {
     }
 
     // Determine initial status based on start date
-    const startDate = new Date(formData.startDate);
-    startDate.setHours(0, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split("T")[0];
     
-    const initialStatus = startDate > today ? "upcoming" : "active";
+    const initialStatus = formData.startDate > todayStr ? "upcoming" : "active";
 
     const { data: member, error: memberError }: any = await supabaseAdmin
       .from("members")
@@ -247,6 +246,7 @@ export async function createMemberAction(formData: any) {
 
     if (planError || !planData) return { success: false, error: "Could not find the selected plan." };
 
+    const startDate = new Date(formData.startDate);
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + planData.duration_days);
 
@@ -332,6 +332,8 @@ export async function getMemberById(id: string) {
       `
       *,
       current_memberships:memberships (
+        id,
+        status,
         start_date,
         end_date,
         membership_plans (
@@ -356,6 +358,7 @@ export async function getMemberById(id: string) {
   let daysLeft = 0;
   let endDateStr = "No active plan";
   let startDateStr = "N/A";
+  let computedStatus = member.status;
 
   if (membership) {
     const startDate = new Date(membership.start_date);
@@ -368,12 +371,29 @@ export async function getMemberById(id: string) {
     endDateStr = membership.end_date;
     startDateStr = membership.start_date;
 
+    const diffTime = endDate.getTime() - today.getTime();
+    daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
     if (startDate > today) {
-      const diffTime = endDate.getTime() - startDate.getTime();
-      daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-    } else {
-      const diffTime = endDate.getTime() - today.getTime();
-      daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+      computedStatus = "upcoming";
+      const futureDiff = endDate.getTime() - startDate.getTime();
+      daysLeft = Math.max(0, Math.ceil(futureDiff / (1000 * 60 * 60 * 24)));
+    } else if (computedStatus !== "archived") {
+      if (daysLeft === 0) {
+        computedStatus = "expired";
+      } else if (daysLeft <= 7) {
+        computedStatus = "expiring";
+      } else {
+        computedStatus = "active";
+      }
+    }
+
+    // Auto-heal DB status if it was stale
+    if (computedStatus !== member.status && member.status !== "archived") {
+      await supabaseAdmin.from("members").update({ status: computedStatus }).eq("id", member.id);
+      if (membership.id && membership.status !== computedStatus) {
+        await supabaseAdmin.from("memberships").update({ status: computedStatus }).eq("id", membership.id);
+      }
     }
   }
 
@@ -386,7 +406,7 @@ export async function getMemberById(id: string) {
     dob: member.date_of_birth || "Not specified",
     address: member.address || "No address provided",
     health_notes: member.health_notes || "None",
-    status: member.status,
+    status: computedStatus,
     is_pt_member: member.is_pt_member,
     device_user_id: member.device_user_id,
     photo_url: member.photo_url,

@@ -5,6 +5,7 @@ export function MemberBadge({ status }: { status: string }) {
     active: "bg-green-500/20 text-green-400 border border-green-500/30",
     expiring: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
     expired: "bg-red-500/20 text-red-400 border border-red-500/30",
+    upcoming: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
     inactive: "bg-muted/50 text-muted-foreground border border-border/30",
     archived: "bg-muted text-muted-foreground border border-border",
   }

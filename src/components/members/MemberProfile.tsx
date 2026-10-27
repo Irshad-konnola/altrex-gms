@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { User, ScanFace, Phone, Mail, MapPin, Activity, CheckCircle2, Dumbbell } from "lucide-react"
+import { User, ScanFace, Phone, Mail, MapPin, Activity, CheckCircle2, Dumbbell, Clock, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { MemberBadge } from "./MemberBadge"
@@ -191,9 +191,31 @@ export function MemberProfile({ initialData }: { initialData: any }) {
             <div className="bg-card border border-border rounded-xl p-5 mb-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-1 h-full bg-gold-500" />
               <h4 className="font-bold text-foreground text-lg mb-1">{member.plan_name || "General Access"}</h4>
-              <p className="text-muted-foreground text-sm flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-500" /> Active
-              </p>
+              {member.status === "active" && (
+                <p className="text-sm flex items-center gap-2 text-green-400 font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-green-500" /> Active
+                </p>
+              )}
+              {member.status === "expiring" && (
+                <p className="text-sm flex items-center gap-2 text-yellow-400 font-medium">
+                  <Clock className="w-4 h-4 text-yellow-400" /> Expiring Soon
+                </p>
+              )}
+              {member.status === "upcoming" && (
+                <p className="text-sm flex items-center gap-2 text-blue-400 font-medium">
+                  <Clock className="w-4 h-4 text-blue-400" /> Upcoming Plan
+                </p>
+              )}
+              {member.status === "expired" && (
+                <p className="text-sm flex items-center gap-2 text-red-400 font-medium">
+                  <AlertCircle className="w-4 h-4 text-red-400" /> Expired
+                </p>
+              )}
+              {member.status === "archived" && (
+                <p className="text-sm flex items-center gap-2 text-muted-foreground font-medium">
+                  <AlertCircle className="w-4 h-4 text-muted-foreground" /> Archived
+                </p>
+              )}
             </div>
 
             <div className="space-y-4">

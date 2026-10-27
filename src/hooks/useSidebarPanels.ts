@@ -31,7 +31,7 @@ export function useSidebarPanels() {
       const { data: expiringData, error: expiringErr } = await supabase
         .from('memberships')
         .select('end_date, members(id, full_name, phone, status)')
-        .eq('status', 'active')
+        .in('status', ['active', 'expiring'])
         .gte('end_date', todayStr)
         .lte('end_date', sevenDaysFromNowStr)
         .order('end_date', { ascending: true })
@@ -63,14 +63,20 @@ export function useSidebarPanels() {
         throw new Error('Failed to fetch sidebar panel details')
       }
 
-      // 2. Cast the expiring array explicitly
-      
-      const expiring = (expiringData || []).map((item: any) => ({
-        id: item.members?.id,
-        full_name: item.members?.full_name,
-        phone: item.members?.phone,
-        endDate: item.end_date,
-      })).filter(item => item.id) as SidebarExpiringMember[]
+      // 2. Cast the expiring array explicitly and deduplicate by member ID
+      const seenExpiringIds = new Set<string>()
+      const expiring = (expiringData || [])
+        .map((item: any) => ({
+          id: item.members?.id,
+          full_name: item.members?.full_name,
+          phone: item.members?.phone,
+          endDate: item.end_date,
+        }))
+        .filter((item: any) => {
+          if (!item.id || seenExpiringIds.has(item.id)) return false
+          seenExpiringIds.add(item.id)
+          return true
+        }) as SidebarExpiringMember[]
 
       // 3. Cast the inactive array explicitly
       const inactive = (inactiveData || []) as SidebarInactiveMember[]
