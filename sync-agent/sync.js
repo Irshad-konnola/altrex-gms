@@ -24,6 +24,101 @@ function getTodayIST() {
 }
 
 /**
+ * Evaluates whether a member is allowed through the door and returns
+ * the exact Hikvision hardware validity payload parameters.
+ * 
+ * Rules:
+ * 1. Valid.enable MUST ALWAYS BE true on Hikvision.
+ *    If enable is false, Hikvision turns OFF expiration checks and grants perpetual access!
+ * 2. Active members: beginTime = earliest start_date <= today, endTime = latest end_date >= today.
+ * 3. Expired / Blocked / Inactive members: beginTime and endTime are set to past dates
+ *    (e.g. 2026-01-01 -> 2026-01-02 or their expired plan end_date).
+ *    Because currentTime > endTime, Hikvision displays "Expired" and keeps the door locked.
+ * 4. beginTime must strictly be <= endTime to satisfy Hikvision ISAPI validation.
+ */
+function evaluateMemberAccess(member, today = getTodayIST()) {
+  const allPlans = (member.memberships || []).filter(p => p.status !== 'cancelled');
+
+  // Sort plans descending by end_date (furthest expiration first)
+  allPlans.sort((a, b) => new Date(b.end_date).getTime() - new Date(a.end_date).getTime());
+
+  // Plans active today or in future
+  const futurePlans = allPlans.filter(p => p.end_date >= today);
+  const currentlyActivePlans = futurePlans.filter(p => p.start_date <= today);
+
+  const isAccountBlocked = ['archived', 'inactive', 'suspended', 'expired'].includes(member.status);
+
+  let isAllowed = false;
+  let isEnabled = true; // MUST ALWAYS BE TRUE to enforce validity rules
+  let beginTime = '2026-01-01T00:00:00';
+  let endTime = '2026-01-02T23:59:59';
+  let planSummary = 'No Plan';
+
+  if (isAccountBlocked) {
+    // Explicitly blocked/expired in dashboard
+    isAllowed = false;
+    isEnabled = true;
+    beginTime = '2026-01-01T00:00:00';
+    endTime = '2026-01-02T23:59:59';
+    planSummary = `Account ${member.status.toUpperCase()}`;
+  } else if (futurePlans.length > 0) {
+    if (currentlyActivePlans.length > 0) {
+      // Active right now!
+      isAllowed = true;
+      isEnabled = true;
+      const earliestStart = currentlyActivePlans.reduce((min, p) => p.start_date < min ? p.start_date : min, currentlyActivePlans[0].start_date);
+      const latestEnd = futurePlans.reduce((max, p) => p.end_date > max ? p.end_date : max, futurePlans[0].end_date);
+      beginTime = `${earliestStart}T00:00:00`;
+      endTime = `${latestEnd}T23:59:59`;
+      planSummary = `Valid until ${latestEnd}`;
+    } else {
+      // Future plan starting later
+      isAllowed = false;
+      isEnabled = true;
+      const earliestStart = futurePlans.reduce((min, p) => p.start_date < min ? p.start_date : min, futurePlans[0].start_date);
+      const latestEnd = futurePlans.reduce((max, p) => p.end_date > max ? p.end_date : max, futurePlans[0].end_date);
+      beginTime = `${earliestStart}T00:00:00`;
+      endTime = `${latestEnd}T23:59:59`;
+      planSummary = `Upcoming (Starts ${earliestStart})`;
+    }
+  } else if (allPlans.length > 0) {
+    // Member had plans in the past, but all are expired
+    isAllowed = false;
+    isEnabled = true;
+    const latestExpired = allPlans[0];
+    endTime = `${latestExpired.end_date}T23:59:59`;
+    const endD = new Date(latestExpired.end_date);
+    endD.setDate(endD.getDate() - 30);
+    beginTime = (latestExpired.start_date && latestExpired.start_date <= latestExpired.end_date)
+      ? `${latestExpired.start_date}T00:00:00`
+      : endD.toISOString().split('T')[0] + 'T00:00:00';
+    planSummary = `EXPIRED on ${latestExpired.end_date}`;
+  } else {
+    // No plans registered
+    isAllowed = false;
+    isEnabled = true;
+    beginTime = '2026-01-01T00:00:00';
+    endTime = '2026-01-02T23:59:59';
+    planSummary = 'No active plan / Expired';
+  }
+
+  // Strict safety check: Hikvision requires beginTime <= endTime
+  if (new Date(beginTime).getTime() > new Date(endTime).getTime()) {
+    const endD = new Date(endTime);
+    endD.setDate(endD.getDate() - 30);
+    beginTime = endD.toISOString().split('T')[0] + 'T00:00:00';
+  }
+
+  return {
+    isAllowed,
+    isEnabled,
+    beginTime,
+    endTime,
+    planSummary
+  };
+}
+
+/**
  * Syncs all mapped members from Supabase to the Hikvision Biometric Device.
  */
 async function syncAllMembers() {
@@ -71,79 +166,24 @@ async function syncAllMembers() {
     const employeeNo = member.device_user_id;
     const name = member.full_name;
 
-    // Filter memberships
-    const allPlans = member.memberships || [];
-    
-    // Sort plans by end_date descending (latest first)
-    allPlans.sort((a, b) => new Date(b.end_date).getTime() - new Date(a.end_date).getTime());
-
-    // Find active plan where end_date >= today
-    const activePlan = allPlans.find(p => p.end_date >= today && p.status !== 'cancelled');
-
-    let isAllowed = false;
-    let beginTime = '2024-01-01T00:00:00';
-    let endTime = '2024-01-01T23:59:59';
-    let isEnabled = true;
-    let planSummary = 'No Plan';
-
-    // If member is explicitly archived, inactive, suspended, or expired
-    if (member.status === 'archived' || member.status === 'inactive' || member.status === 'suspended' || member.status === 'expired') {
-      isAllowed = false;
-      isEnabled = false;
-      beginTime = '2020-01-01T00:00:00';
-      endTime = '2020-01-02T23:59:59';
-      planSummary = `Account ${member.status.toUpperCase()}`;
-    } else if (activePlan) {
-      // Member has an active membership!
-      isAllowed = true;
-      isEnabled = true;
-      beginTime = `${activePlan.start_date}T00:00:00`;
-      endTime = `${activePlan.end_date}T23:59:59`;
-      planSummary = `Valid until ${activePlan.end_date}`;
-    } else if (allPlans.length > 0) {
-      // Member had a plan, but it is now expired
-      isAllowed = false;
-      isEnabled = true;
-      const latestExpired = allPlans[0];
-      endTime = `${latestExpired.end_date}T23:59:59`;
-      const endD = new Date(latestExpired.end_date);
-      endD.setDate(endD.getDate() - 30);
-      beginTime = (latestExpired.start_date && latestExpired.start_date <= latestExpired.end_date)
-        ? `${latestExpired.start_date}T00:00:00`
-        : endD.toISOString().split('T')[0] + 'T00:00:00';
-      planSummary = `EXPIRED on ${latestExpired.end_date}`;
-    } else {
-      // No plans registered
-      isAllowed = false;
-      isEnabled = false;
-      beginTime = '2020-01-01T00:00:00';
-      endTime = '2020-01-02T23:59:59';
-      planSummary = 'No active plan / Expired';
-    }
-
-    // Strict safety check: Hikvision requires beginTime <= endTime
-    if (new Date(beginTime).getTime() > new Date(endTime).getTime()) {
-      const endD = new Date(endTime);
-      endD.setDate(endD.getDate() - 30);
-      beginTime = endD.toISOString().split('T')[0] + 'T00:00:00';
-    }
+    const access = evaluateMemberAccess(member, today);
 
     try {
       const result = await hikClient.setUserValidity({
         employeeNo,
         name,
-        beginTime,
-        endTime,
-        enable: isEnabled
+        beginTime: access.beginTime,
+        endTime: access.endTime,
+        enable: access.isEnabled
       });
 
       if (result.success) {
-        if (isAllowed) {
+        if (access.isAllowed) {
           allowedCount++;
-          console.log(`  ✅ [ALLOWED] [ID: ${employeeNo.padEnd(3)}] ${name.padEnd(20)} -> ${planSummary}`);
+          console.log(`  ✅ [ALLOWED] [ID: ${employeeNo.padEnd(3)}] ${name.padEnd(20)} -> ${access.planSummary}`);
         } else {
           blockedCount++;
-          console.log(`  🔒 [BLOCKED] [ID: ${employeeNo.padEnd(3)}] ${name.padEnd(20)} -> ${planSummary}`);
+          console.log(`  🔒 [BLOCKED] [ID: ${employeeNo.padEnd(3)}] ${name.padEnd(20)} -> ${access.planSummary}`);
         }
       } else if (result.notEnrolled) {
         notEnrolledCount++;
@@ -182,6 +222,7 @@ async function syncAllMembers() {
 
 module.exports = {
   syncAllMembers,
+  evaluateMemberAccess,
   hikClient,
   supabase
 };
