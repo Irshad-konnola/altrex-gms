@@ -18,6 +18,9 @@ echo [SUCCESS] Auto-start has been configured!
 echo The sync agent will now automatically launch in the background
 echo whenever this computer powers on or restarts.
 echo.
-echo No command prompt window will be displayed on screen.
+echo [INFO] Starting the sync agent now in the background...
+wscript.exe "%TARGET_VBS%"
+echo [SUCCESS] Sync agent is now actively running in the background!
+echo (You will see "node.exe" in Task Manager under Background Processes)
 echo.
 pause
