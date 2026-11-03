@@ -30,11 +30,12 @@ function getTodayIST() {
  * Rules:
  * 1. Valid.enable MUST ALWAYS BE true on Hikvision.
  *    If enable is false, Hikvision turns OFF expiration checks and grants perpetual access!
- * 2. Active members: beginTime = earliest start_date <= today, endTime = latest end_date >= today.
- * 3. Expired / Blocked / Inactive members: beginTime and endTime are set to past dates
- *    (e.g. 2026-01-01 -> 2026-01-02 or their expired plan end_date).
+ * 2. Active members: If a member has a paid membership plan covering today,
+ *    THEY ARE ALLOWED! (Even if member.status was left as 'expired' from a previous plan).
+ * 3. Suspended/Archived/Inactive members: Explicitly frozen by gym admin -> BLOCKED.
+ * 4. Expired / No-plan members: beginTime and endTime are set to past dates (2026-01-01 -> 2026-01-02).
  *    Because currentTime > endTime, Hikvision displays "Expired" and keeps the door locked.
- * 4. beginTime must strictly be <= endTime to satisfy Hikvision ISAPI validation.
+ * 5. beginTime must strictly be <= endTime to satisfy Hikvision ISAPI validation.
  */
 function evaluateMemberAccess(member, today = getTodayIST()) {
   const allPlans = (member.memberships || []).filter(p => p.status !== 'cancelled');
@@ -46,7 +47,8 @@ function evaluateMemberAccess(member, today = getTodayIST()) {
   const futurePlans = allPlans.filter(p => p.end_date >= today);
   const currentlyActivePlans = futurePlans.filter(p => p.start_date <= today);
 
-  const isAccountBlocked = ['archived', 'inactive', 'suspended', 'expired'].includes(member.status);
+  // Administrative freeze: only if member is explicitly archived, inactive, or suspended
+  const isAccountFrozen = ['archived', 'inactive', 'suspended'].includes(member.status);
 
   let isAllowed = false;
   let isEnabled = true; // MUST ALWAYS BE TRUE to enforce validity rules
@@ -54,8 +56,8 @@ function evaluateMemberAccess(member, today = getTodayIST()) {
   let endTime = '2026-01-02T23:59:59';
   let planSummary = 'No Plan';
 
-  if (isAccountBlocked) {
-    // Explicitly blocked/expired in dashboard
+  if (isAccountFrozen) {
+    // Explicitly frozen in dashboard (archived, inactive, suspended)
     isAllowed = false;
     isEnabled = true;
     beginTime = '2026-01-01T00:00:00';
@@ -167,6 +169,11 @@ async function syncAllMembers() {
     const name = member.full_name;
 
     const access = evaluateMemberAccess(member, today);
+
+    // Auto-heal: If member has an active plan covering today but status was 'expired', heal in DB
+    if (access.isAllowed && member.status === 'expired') {
+      supabase.from('members').update({ status: 'active' }).eq('id', member.id).then(() => {});
+    }
 
     try {
       const result = await hikClient.setUserValidity({

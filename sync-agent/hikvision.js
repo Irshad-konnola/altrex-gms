@@ -1,67 +1,50 @@
-const { request } = require('urllib');
+const axios = require('axios');
+const urllib = require('urllib');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 class HikvisionClient {
-  constructor(config = {}) {
-    this.ip = config.ip || process.env.HIKVISION_IP || '192.168.1.100';
-    this.port = config.port || process.env.HIKVISION_PORT || 80;
-    this.user = config.user || process.env.HIKVISION_USER || 'admin';
-    this.pass = config.pass || process.env.HIKVISION_PASS || '';
+  constructor() {
+    this.ip = process.env.HIKVISION_DEVICE_IP || '192.168.220.2';
+    this.port = process.env.HIKVISION_DEVICE_PORT || '80';
+    this.user = process.env.HIKVISION_USERNAME || 'admin';
+    this.pass = process.env.HIKVISION_PASSWORD || 'altrex@123';
     this.baseUrl = `http://${this.ip}:${this.port}`;
-    this.auth = `${this.user}:${this.pass}`;
   }
 
+  /**
+   * Internal request method using HTTP Digest Authentication.
+   * Hikvision Access Control Terminals strictly require Digest Auth for ISAPI.
+   */
   async _request(endpoint, options = {}) {
     const url = `${this.baseUrl}${endpoint}`;
-    const timeout = options.timeout || 8000;
-
-    const requestOpts = {
-      method: options.method || 'GET',
-      digestAuth: this.auth,
-      timeout,
+    const method = (options.method || 'GET').toUpperCase();
+    
+    const requestOptions = {
+      method,
+      digestAuth: `${this.user}:${this.pass}`,
+      timeout: 10000,
+      dataType: 'json',
       headers: {
-        'Accept': 'application/json, text/xml, */*',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
         ...(options.headers || {})
       }
     };
 
     if (options.data) {
-      if (typeof options.data === 'object') {
-        requestOpts.headers['Content-Type'] = 'application/json';
-        requestOpts.data = JSON.stringify(options.data);
-      } else {
-        requestOpts.data = options.data;
-      }
+      requestOptions.content = JSON.stringify(options.data);
     }
 
     try {
-      const res = await request(url, requestOpts);
-      let parsedData = res.data;
-      
-      // Attempt JSON parse if it's a buffer or string
-      if (Buffer.isBuffer(parsedData)) {
-        parsedData = parsedData.toString('utf8');
-      }
-      if (typeof parsedData === 'string') {
-        try {
-          parsedData = JSON.parse(parsedData);
-        } catch {
-          // It might be XML, keep as string
-        }
-      }
-
-      return {
-        status: res.status,
-        headers: res.headers,
-        data: parsedData
-      };
+      const response = await urllib.request(url, requestOptions);
+      return response;
     } catch (err) {
-      throw new Error(`Hikvision ISAPI Error (${options.method || 'GET'} ${endpoint}): ${err.message}`);
+      throw new Error(`Hikvision ISAPI Error (${method} ${endpoint}): ${err.message}`);
     }
   }
 
-  // 1. Check Device Info (Firmware, Model, Serial)
+  // 1. Device Info (to verify connection & online status)
   async getDeviceInfo() {
     const res = await this._request('/ISAPI/System/deviceInfo');
     return res.data;
@@ -96,7 +79,6 @@ class HikvisionClient {
       }
       return null;
     } catch (err) {
-      // If endpoint not supported, return null
       return null;
     }
   }
@@ -125,8 +107,6 @@ class HikvisionClient {
     const body = res.data;
     
     // Check for success responses
-    // Hikvision standard JSON response: { statusCode: 1, statusString: "OK", subStatusCode: "ok" }
-    // Or in ResponseStatus: { statusCode: 1 }
     const statusObj = body?.ResponseStatus || body;
     const statusCode = statusObj?.statusCode;
     const subStatusCode = statusObj?.subStatusCode || statusObj?.statusString;
@@ -146,6 +126,24 @@ class HikvisionClient {
       message: `Device returned status: ${statusCode} (${subStatusCode || 'Unknown'})`,
       raw: body 
     };
+  }
+
+  // 5. Delete User from device hardware
+  async deleteUser(employeeNo) {
+    const payload = {
+      UserInfoDelCond: {
+        EmployeeNoList: [{ employeeNo: String(employeeNo) }]
+      }
+    };
+    try {
+      const res = await this._request('/ISAPI/AccessControl/UserInfo/Delete?format=json', {
+        method: 'PUT',
+        data: payload
+      });
+      return { success: true, data: res.data };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   }
 }
 
